@@ -1,0 +1,664 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+.simulator-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 22px;
+    margin-bottom: 25px;
+}
+.sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.sim-table th, .sim-table td {
+    border: 1px solid #cbd5e0;
+    padding: 8px 10px;
+    text-align: left;
+}
+.sim-table th {
+    background-color: #edf2f7;
+    color: #2d3748;
+    font-weight: bold;
+}
+.cat-header {
+    background-color: #f7fafc;
+    font-weight: bold;
+    text-align: center;
+    color: #4a5568;
+    width: 70px;
+}
+.slot-num {
+    text-align: center !important;
+    background-color: #f8fafc;
+    font-weight: bold;
+    color: #718096;
+    width: 35px;
+}
+select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 13px;
+}
+select:disabled {
+    background-color: #edf2f7;
+    color: #a0aec0;
+    cursor: not-allowed;
+}
+.val-text {
+    font-weight: bold;
+    color: #2b6cb0;
+    font-size: 14px;
+}
+.disabled-row td:not(.cat-header) {
+    background-color: #f7fafc;
+    color: #a0aec0;
+}
+input[type="radio"] {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+/* プラン保存・読込コントロールパネル */
+.save-panel {
+    margin-top: 25px;
+    padding: 15px 20px;
+    background-color: #f7fafc;
+    border: 1px dashed #cbd5e0;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 15px;
+}
+.panel-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.panel-section input[type="text"] {
+    padding: 7px 12px;
+    font-size: 13px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    width: 220px;
+}
+.panel-section label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 0;
+}
+.panel-section select {
+    width: 160px;
+    padding: 6px;
+}
+.btn {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-save {
+    background-color: #3182ce;
+    color: #fff;
+}
+.btn-save:hover {
+    background-color: #2b6cb0;
+}
+.btn-delete {
+    background-color: #e53e3e;
+    color: #fff;
+}
+.btn-delete:hover {
+    background-color: #c53030;
+}
+
+/* ステータス総合計エリア */
+.summary-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+.summary-container h2 {
+    font-size: 16px;
+    color: #2d3748;
+    margin: 0;
+    border-left: 4px solid #3182ce;
+    padding-left: 10px;
+}
+.awakening-box {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e0;
+}
+.awakening-box label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4a5568;
+    margin-right: 8px;
+}
+.awakening-box select {
+    width: auto;
+    padding: 4px 8px;
+    font-size: 13px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+}
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+.summary-card {
+    background-color: #fff;
+    padding: 12px 15px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.card-status-name {
+    font-size: 12px;
+    color: #4a5568;
+    font-weight: 500;
+}
+.card-status-value {
+    font-size: 15px;
+    color: #2b6cb0;
+    font-weight: bold;
+}
+.no-data-text {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+    margin: 10px 0;
+    font-size: 13px;
+}
+/* 一括変更パネルのスタイル */
+.bulk-control-panel {
+    background-color: #f7fafc;
+    border: 1px solid #cbd5e0;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around;
+}
+.bulk-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bulk-section label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4a5568;
+}
+.bulk-section select {
+    width: 90px;
+    padding: 5px;
+}
+/* ==========================================================================
+   メージシミュレータエリア用
+   ========================================================================== */
+
+.damage-calc-container {
+    margin-top: 35px;
+    padding: 25px;
+    background-color: #fcfcfc;
+    border: 1px solid #cbd5e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.damage-calc-container h2 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+    border-left: 4px solid #e53e3e;
+    padding-left: 10px;
+}
+
+.damage-calc-container .help-text {
+    font-size: 11px;
+    color: #718096;
+    margin: 0 0 20px 0;
+    font-style: italic;
+}
+
+
+.calc-main-flex-container {
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    box-sizing: border-box;
+}
+
+
+.calc-box-half {
+    flex: 1;
+    width: 50%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* 各行の隙間を均一に */
+}
+
+/* 攻撃側ブロックの背景と上枠線 */
+.src-side-block {
+    background-color: #fffaf5;
+    border-top: 4px solid #dd6b20;
+}
+.src-side-block h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: #dd6b20;
+    border-bottom: 2px solid #feebc8;
+    padding-bottom: 8px;
+}
+
+/* 防御側ブロックの背景と上枠線 */
+.dst-side-block {
+    background-color: #f7fafc;
+    border-top: 4px solid #3182ce;
+}
+.dst-side-block h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: #3182ce;
+    border-bottom: 2px solid #ebf8ff;
+    padding-bottom: 8px;
+}
+
+/* 各入力行のスタイル */
+.fixed-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 38px; /* 全ての行の高さを完全に均一化 */
+    padding: 0 10px;
+    background-color: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.fixed-input-row:hover {
+    background-color: #fcfcfc;
+}
+
+/* PVP、スキル専用行の個別背景デザイン */
+.pvp-item-row { background-color: #f7fafc; border-left: 3px solid #4299e1; }
+.skill-item-row { background-color: #fffaf0; border-left: 3px solid #ed8936; }
+
+/* 左右の高さを一致させるためのダミー行用スタイル */
+.dummy-height-row {
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    pointer-events: none;
+}
+
+/* 各行の左側のテキストラベル */
+.fixed-input-row label {
+    font-weight: 500;
+    font-size: 13px;
+    color: #4a5568;
+    white-space: nowrap;
+}
+
+/* 各行の右端の数値フォーム */
+.fixed-input-row input[type="number"] {
+    width: 100px;
+    padding: 5px 8px;
+    font-size: 13px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    text-align: right;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+.fixed-input-row input[type="number"]:focus {
+    border-color: #4a5568;
+    outline: none;
+}
+
+/* ==========================================================================
+   ダメージ最終出力パネル
+   ========================================================================== */
+.damage-output-panel {
+    margin-top: 25px;
+    background-color: #1a202c;
+    color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.out-column {
+    flex: 1;
+    min-width: 250px;
+    padding: 10px 15px;
+}
+
+.text-pve {
+    border-right: 1px solid #4a5568;
+}
+
+/* タブレット・スマホ用の縦並び設定 */
+@media (max-width: 900px) {
+    .calc-main-flex-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .calc-box-half {
+        width: 100%;
+    }
+    .dummy-height-row {
+        display: none;/
+    }
+    .text-pve {
+        border-right: none;
+        border-bottom: 1px solid #4a5568;
+        padding-bottom: 20px;
+    }
+}
+
+.damage-output-panel h4 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+}
+.text-pve h4 { color: #68d391; }
+.text-pvp h4 { color: #fc8181; }
+
+.out-row {
+    font-size: 13px;
+    color: #cbd5e0;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 320px;
+}
+
+.dmg-val {
+    font-size: 18px;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+}
+.text-pve .dmg-val { color: #48bb78; }
+.text-pvp .dmg-val { color: #f56565; }
+
+/* ==========================================================================
+   エンチャントシミュレータ反映設定パネル
+   ========================================================================== */
+.side-toggle-panel {
+    background-color: #fff;
+    border: 1px solid #cbd5e0;
+    padding: 18px 24px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* ① タイトル行のスタイル */
+.panel-title-row {
+    width: 100%;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 8px;
+}
+.side-toggle-panel .toggle-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #2d3748;
+}
+
+/* ② 反映先ラジオボタン行のスタイル */
+.panel-options-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+.panel-options-row .options-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4a5568;
+    width: 85px;
+}
+
+/* ラジオボタンの選択ラベル */
+.side-toggle-label {
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+.side-toggle-label:hover {
+    background-color: #f7fafc;
+    border-color: #e2e8f0;
+}
+
+.label-src { color: #c53030; } /* 攻撃側テキスト：赤 */
+.label-dst { color: #2b6cb0; } /* 防御側テキスト：青 */
+
+.side-toggle-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+/* ③ ボタンコントロール行のスタイル */
+.panel-buttons-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* 操作用ボタンの基本スタイル */
+.side-toggle-panel .btn {
+    padding: 9px 24px;
+    font-size: 13px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 値を適用するボタン（緑） */
+.side-toggle-panel .btn-save {
+    background-color: #38a169;
+    color: #fff;
+}
+.side-toggle-panel .btn-save:hover {
+    background-color: #2f855a;
+    box-shadow: 0 3px 6px rgba(56, 161, 105, 0.15);
+}
+
+/* 入力初期化ボタン（赤） */
+.side-toggle-panel .btn-delete {
+    background-color: #e53e3e;
+    color: #fff;
+}
+.side-toggle-panel .btn-delete:hover {
+    background-color: #c53030;
+    box-shadow: 0 3px 6px rgba(229, 62, 62, 0.15);
+}
+
+/* スマートフォンなどの極端に狭い画面用のレスポンシブ */
+@media (max-width: 600px) {
+    .panel-options-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .panel-buttons-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .side-toggle-panel .btn {
+        width: 100%;
+        padding: 11px;
+    }
+}
+
+/* ==========================================================================
+   タブ切り替えシステム用スタイル
+   ========================================================================== */
+
+/* タブボタンを横に並べるコンテナ */
+.tab-navigation {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 2px;
+}
+
+/* タブボタン共通の基本スタイル */
+.tab-btn {
+    flex: 1;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #718096;
+    background-color: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.tab-btn:hover {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+/* 現在選択されているアクティブなタブボタン */
+.tab-btn.active-tab {
+    color: #fff;
+    background-color: #3182ce;
+    border-color: #3182ce;
+    box-shadow: 0 -2px 6px rgba(49, 130, 206, 0.15);
+}
+
+/* タブコンテンツの表示・非表示制御 */
+.tab-pane {
+    display: none;
+    width: 100%;
+}
+
+
+.tab-pane.active-pane {
+    display: block;
+    animation: fadeInTab 0.25s ease-out;
+}
+
+/* タブが切り替わったときのフェードイン演出 */
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   エンチャントステータス総合計エリア専用スタイル
+   ========================================================================== */
+
+.summary-top-margin {
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.bulk-section {
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   ダメージ出力パネル・スキルクリティカル専用スタイル
+   ========================================================================== */
+/* スキルクリティカル全体のフォントウェイトや余白の微調整 */
+.out-row-skill-cri {
+    font-weight: 500;
+}
+
+/* 一般モンスター側（PvE）の黄色系の文字色指定 */
+.out-row-skill-cri.mon-color {
+    color: #f6e05e;
+}
+.out-row-skill-cri.mon-color .dmg-val {
+    color: #ecc94b;
+}
+
+/* 対人戦側（PvP）のオレンジ系の文字色指定 */
+.out-row-skill-cri.pvp-color {
+    color: #f6ad55;
+}
+.out-row-skill-cri.pvp-color .dmg-val {
+    color: #f6ad55;
+}

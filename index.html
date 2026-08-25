@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROX シミュレータ</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="simulator-wrapper">
+    <h1>⚔️ ROX シミュレータ</h1>
+
+    <div class="tab-navigation">
+        <button id="tabBtnEnchant" class="tab-btn active-tab" onclick="switchTab('enchant')">💎 エンチャントシミュレータ</button>
+        <button id="tabBtnDamage" class="tab-btn" onclick="switchTab('damage')">⚔️ ダメージ計算機</button>
+    </div>
+    
+    <div id="tabContentEnchant" class="tab-pane active-pane">
+    <!-- 🌟【上部用】プラン保存・読込コントロールパネル -->
+    <div class="save-panel">
+        <div class="panel-section">
+            <input type="text" id="planNameInput_top" placeholder="プラン名を入力（例：クリダメ特化型）" oninput="syncSavePanelInputs('top')">
+            <button class="btn btn-save" onclick="saveCurrentPlan('top')">💾 現在の構成を保存</button>
+        </div>
+        <div class="panel-section">
+            <label for="savedPlansSelect_top">📂 保存済みプラン:</label>
+            <select id="savedPlansSelect_top" onchange="loadSelectedPlan('top')">
+                <option value="">-- プランを選択 --</option>
+            </select>
+            <button class="btn btn-delete" onclick="deleteSelectedPlan('top')">🗑️ 削除</button>
+        </div>
+    </div>
+
+    <!-- 🌟【上部用】クイック覚醒設定コントロールバー  -->
+    <div class="summary-container summary-top-margin">
+        <div class="summary-header">
+            <h2>📊 エンチャントステータス総合計</h2>
+            <div class="awakening-box">
+                <label for="awakeningLevel_top">🌟 覚醒レベル:</label>
+                <select id="awakeningLevel_top" onchange="syncAwakeningLevel('top')">
+                    <option value="0" selected>なし (0%)</option>
+                    <option value="0.5">Lv10 (50%)</option>
+                    <option value="0.6">Lv12 (60%)</option>
+                    <option value="0.7">Lv14 (70%)</option>
+                    <option value="0.8">Lv16 (80%)</option>
+                    <option value="0.9">Lv18 (90%)</option>
+                    <option value="1.0">Lv20 (100%)</option>
+                </select>
+            </div>
+        </div>
+        <!-- 💡 上部用の合計カードがリアルタイムに描画されるエリア -->
+        <div id="totalSummary_top" class="summary-grid">
+            <p class="no-data-text">装備のステータスを選択すると、ここに合計がリアルタイムで集計されます。</p>
+        </div>
+    </div>
+    
+    <div class="bulk-control-panel">
+        <div class="bulk-section">
+            <label for="bulkGrade">🎨 全グレード一括変更:</label>
+            <select id="bulkGrade">
+                <option value="白">白</option>
+                <option value="青">青</option>
+                <option value="紫">紫</option>
+                <option value="橙">橙</option>
+            </select>
+            <button class="btn btn-save" onclick="applyBulkGrade()">適用</button>
+        </div>
+        <div class="bulk-section">
+            <label for="bulkLevel">⚡ 全レベル一括変更:</label>
+            <select id="bulkLevel">
+                <option value="Lv16">Lv16</option>
+                <option value="Lv17">Lv17</option>
+                <option value="Lv18">Lv18</option>
+                <option value="Lv19">Lv19</option>
+                <option value="Lv20">Lv20</option>
+            </select>
+            <button class="btn btn-save" onclick="applyBulkLevel()">適用</button>
+        </div>
+        <div class="bulk-section">
+            <button class="btn btn-delete" onclick="resetEnchantSimulator()">🗑️ 全スロット初期化</button>
+        </div>
+    </div>
+
+    <table class="sim-table">
+        <thead>
+            <tr>
+                <th>カテゴリ</th>
+                <th>装備部位</th>
+                <th>枠</th>
+                <th>グレード</th>
+                <th>エンチャレベル</th>
+                <th>対象ステータス</th>
+                <th>上昇値(覚醒込）</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tbody>
+            <!-- ==================== 武器セクション ==================== -->
+            <!-- 片手武器 (1〜3) -->
+            <tr id="row_oneHand_1">
+                <td rowspan="9" class="cat-header">武器</td>
+                <td rowspan="3">
+                    <input type="radio" id="weaponMode1" name="weaponMode" value="oneHand" checked onchange="toggleWeaponMode()">
+                    <label for="weaponMode1">片手武器</label>
+                </td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_oneHand_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_oneHand_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_oneHand_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_oneHand_1" class="val-text">-</span></td>
+            </tr>
+            <tr id="row_oneHand_2">
+                <td class="slot-num">②</td>
+                <td><select id="grade_oneHand_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_oneHand_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_oneHand_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_oneHand_2" class="val-text">-</span></td>
+            </tr>
+            <tr id="row_oneHand_3">
+                <td class="slot-num">③</td>
+                <td><select id="grade_oneHand_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_oneHand_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_oneHand_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_oneHand_3" class="val-text">-</span></td>
+            </tr>
+
+            <!-- サブ武器 (1〜3) -->
+            <tr id="row_subWeapon_1">
+                <td rowspan="3">サブ武器</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_subWeapon_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_subWeapon_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_subWeapon_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_subWeapon_1" class="val-text">-</span></td>
+            </tr>
+            <tr id="row_subWeapon_2">
+                <td class="slot-num">②</td>
+                <td><select id="grade_subWeapon_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_subWeapon_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_subWeapon_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_subWeapon_2" class="val-text">-</span></td>
+            </tr>
+            <tr id="row_subWeapon_3">
+                <td class="slot-num">③</td>
+                <td><select id="grade_subWeapon_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_subWeapon_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_subWeapon_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_subWeapon_3" class="val-text">-</span></td>
+            </tr>
+
+            <!-- 両手武器 (1〜3) -->
+            <tr id="row_twoHand_1" class="disabled-row">
+                <td rowspan="3">
+                    <input type="radio" id="weaponMode2" name="weaponMode" value="twoHand" onchange="toggleWeaponMode()">
+                    <label for="weaponMode2">両手武器</label>
+                </td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_twoHand_1" disabled onchange="calculateAll()"></select></td>
+                <td><select id="level_twoHand_1" disabled onchange="calculateAll()"></select></td>
+                <td><select id="status_twoHand_1" disabled onchange="calculateAll()"></select></td>
+                <td><span id="result_twoHand_1" class="val-text">-</span></td>
+            </tr>
+            <tr id="row_twoHand_2" class="disabled-row">
+                <td class="slot-num">②</td>
+                <td><select id="grade_twoHand_2" disabled onchange="calculateAll()"></select></td>
+                <td><select id="level_twoHand_2" disabled onchange="calculateAll()"></select></td>
+                <td><select id="status_twoHand_2" disabled onchange="calculateAll()"></select></td>
+                <td><span id="result_twoHand_2" class="val-text">-</span></td>
+            </tr>
+            <tr id="row_twoHand_3" class="disabled-row">
+                <td class="slot-num">③</td>
+                <td><select id="grade_twoHand_3" disabled onchange="calculateAll()"></select></td>
+                <td><select id="level_twoHand_3" disabled onchange="calculateAll()"></select></td>
+                <td><select id="status_twoHand_3" disabled onchange="calculateAll()"></select></td>
+                <td><span id="result_twoHand_3" class="val-text">-</span></td>
+            </tr>
+
+            <!-- ==================== 防具セクション ==================== -->
+            <!-- 鎧 (1〜3) -->
+            <tr>
+                <td rowspan="9" class="cat-header">防具</td>
+                <td rowspan="3">鎧</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_armor_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_armor_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_armor_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_armor_1" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">②</td>
+                <td><select id="grade_armor_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_armor_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_armor_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_armor_2" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">③</td>
+                <td><select id="grade_armor_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_armor_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_armor_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_armor_3" class="val-text">-</span></td>
+            </tr>
+            <!-- 肩 (1〜3) -->
+            <tr>
+                <td rowspan="3">肩</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_shoulder_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_shoulder_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_shoulder_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_shoulder_1" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">②</td>
+                <td><select id="grade_shoulder_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_shoulder_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_shoulder_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_shoulder_2" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">③</td>
+                <td><select id="grade_shoulder_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_shoulder_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_shoulder_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_shoulder_3" class="val-text">-</span></td>
+            </tr>
+            <!-- 足 (1〜3) -->
+            <tr>
+                <td rowspan="3">足</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_foot_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_foot_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_foot_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_foot_1" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">②</td>
+                <td><select id="grade_foot_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_foot_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_foot_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_foot_2" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">③</td>
+                <td><select id="grade_foot_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_foot_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_foot_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_foot_3" class="val-text">-</span></td>
+            </tr>
+
+            <!-- ==================== 装飾セクション ==================== -->
+            <!-- アクセ（左） (1〜3) -->
+            <tr>
+                <td rowspan="9" class="cat-header">装飾</td>
+                <td rowspan="3">アクセ（左）</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_accLeft_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_accLeft_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_accLeft_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_accLeft_1" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">②</td>
+                <td><select id="grade_accLeft_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_accLeft_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_accLeft_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_accLeft_2" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">③</td>
+                <td><select id="grade_accLeft_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_accLeft_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_accLeft_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_accLeft_3" class="val-text">-</span></td>
+            </tr>
+            <!-- アクセ（右） (1〜3) -->
+            <tr>
+                <td rowspan="3">アクセ（右）</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_accRight_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_accRight_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_accRight_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_accRight_1" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">②</td>
+                <td><select id="grade_accRight_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_accRight_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_accRight_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_accRight_2" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">③</td>
+                <td><select id="grade_accRight_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_accRight_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_accRight_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_accRight_3" class="val-text">-</span></td>
+            </tr>
+            <!-- お守り (1〜3) -->
+            <tr>
+                <td rowspan="3">お守り</td>
+                <td class="slot-num">①</td>
+                <td><select id="grade_talisman_1" onchange="calculateAll()"></select></td>
+                <td><select id="level_talisman_1" onchange="calculateAll()"></select></td>
+                <td><select id="status_talisman_1" onchange="calculateAll()"></select></td>
+                <td><span id="result_talisman_1" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">②</td>
+                <td><select id="grade_talisman_2" onchange="calculateAll()"></select></td>
+                <td><select id="level_talisman_2" onchange="calculateAll()"></select></td>
+                <td><select id="status_talisman_2" onchange="calculateAll()"></select></td>
+                <td><span id="result_talisman_2" class="val-text">-</span></td>
+            </tr>
+            <tr>
+                <td class="slot-num">③</td>
+                <td><select id="grade_talisman_3" onchange="calculateAll()"></select></td>
+                <td><select id="level_talisman_3" onchange="calculateAll()"></select></td>
+                <td><select id="status_talisman_3" onchange="calculateAll()"></select></td>
+                <td><span id="result_talisman_3" class="val-text">-</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 💾 プラン保存・読込コントロールパネル -->
+    <div class="save-panel">
+        <div class="panel-section">
+            <input type="text" id="planNameInput" placeholder="プラン名を入力（例：クリダメ特化型）">
+            <button class="btn btn-save" onclick="saveCurrentPlan()">💾 現在の構成を保存</button>
+        </div>
+        <div class="panel-section">
+            <label for="savedPlansSelect">📂 保存済みプラン:</label>
+            <select id="savedPlansSelect" onchange="loadSelectedPlan()">
+                <option value="">-- プランを選択 --</option>
+            </select>
+            <button class="btn btn-delete" onclick="deleteSelectedPlan()">🗑️ 削除</button>
+        </div>
+    </div>
+
+    <!-- 📊 ステータス総合計表示エリア -->
+    <div class="summary-container">
+        <div class="summary-header">
+            <h2>📊 エンチャントステータス総合計</h2>
+            <div class="awakening-box">
+                <label for="awakeningLevel">🌟 覚醒レベル:</label>
+                <select id="awakeningLevel" onchange="calculateAll()">
+                    <option value="0" selected>なし</option>
+                    <option value="0.5">Lv10 (50%)</option>
+                    <option value="0.6">Lv12 (60%)</option>
+                    <option value="0.7">Lv14 (70%)</option>
+                    <option value="0.8">Lv16 (80%)</option>
+                    <option value="0.9">Lv18 (90%)</option>
+                    <option value="1.0">Lv20 (100%)</option>
+                </select>
+            </div>
+        </div>
+        <div id="totalSummary" class="summary-grid">
+            <p class="no-data-text">装備のステータスを選択すると、ここに合計がリアルタイムで集計されます。</p>
+        </div>
+    </div>
+    </div>
+
+    <!-- 🌟【新設】ダメージ計算機タブの中身（既存のダメージ計算エリアを包む） -->
+    <div id="tabContentDamage" class="tab-pane">
+    <!-- ⚔️ ダメージシミュレータエリア -->
+    <div class="damage-calc-container">
+        <h2>⚔️ ダメージシミュレータ</h2>
+        <p class="help-text">※エンチャントシミュレータの値を反映できます。さらに手動でバフ値などを上乗せ可能です。</p>
+        
+        <div class="side-toggle-panel">
+            
+            <!-- ① タイトルエリア -->
+            <div class="panel-title-row">
+                <span class="toggle-title">⚙️ エンチャントシミュレータ反映設定</span>
+            </div>
+            
+            <!-- ② 反映先のラジオボタン行 -->
+            <div class="panel-options-row">
+                <span class="options-label">🎯 反映先：</span>
+                <label class="side-toggle-label label-src">
+                    <input type="radio" id="calcModeSrc" name="calcPositionMode" value="src" checked onchange="switchPositionMode()"> ⚔️ 攻撃側 (自分のエンチャ増加分を反映)
+                </label>
+                <label class="side-toggle-label label-dst">
+                    <input type="radio" id="calcModeDst" name="calcPositionMode" value="dst" onchange="switchPositionMode()"> 🛡️ 防御側 (自分のエンチャ軽減分を反映)
+                </label>
+            </div>
+            
+            <!-- ③ ボタンコントロール行 -->
+            <div class="panel-buttons-row">
+                <button class="btn btn-save" onclick="syncEnchantToInputs()">✨ 値を適用する</button>
+                <button class="btn btn-delete" onclick="resetCalculatorInputs()">🔄 入力初期化</button>
+            </div>
+            
+        </div>
+        
+        <div class="save-panel" style="margin-bottom: 25px;">
+            <div class="panel-section">
+                <input type="text" id="dmgPlanNameInput" placeholder="計算プラン名（例：ボス戦・通常型）">
+                <button class="btn btn-save" onclick="saveDamagePlan()">💾 計算条件を保存</button>
+            </div>
+            <div class="panel-section">
+                <label for="savedDmgPlansSelect">📂 保存済み計算プラン:</label>
+                <select id="savedDmgPlansSelect" onchange="loadDamagePlan()">
+                    <option value="">-- プランを選択 --</option>
+                </select>
+                <button class="btn btn-delete" onclick="deleteDamagePlan()">🗑️ 削除</button>
+            </div>
+        </div>
+        
+        <div class="calc-main-flex-container">
+            
+            <!-- 🟥 攻撃側ブロック (左側) -->
+            <div class="calc-box-half src-side-block">
+                <h3>🟥 攻撃側 / 増加部分 (あなた)</h3>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_atk">物理 / 魔法攻撃力 (ステータス値):</label>
+                    <input type="number" id="calc_atk" value="10000" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_pen">最終物理 / 魔法貫通 (%):</label>
+                    <input type="number" id="calc_pen" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_criDmg">CRIダメージ (%):</label>
+                    <input type="number" id="calc_criDmg" value="200" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_atkPercent">物理 / 魔法増強 (%):</label>
+                    <input type="number" id="calc_atkPercent" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_finAtkPercent">最終物理 / 魔法増強 (%):</label>
+                    <input type="number" id="calc_finAtkPercent" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_monsterDamage">種族ダメージ増加 (%):</label>
+                    <input type="number" id="calc_monsterDamage" value="0" oninput="calculateDamage()">
+                </div>
+
+                <div class="fixed-input-row">
+                    <label for="calc_attrDmg">属性強化 (%):</label>
+                    <input type="number" id="calc_attrDmg" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_attrFactor">属性相性倍率 (%):</label>
+                    <input type="number" id="calc_attrFactor" value="100" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_sizeFactor">武器サイズ補正 (%):</label>
+                    <input type="number" id="calc_sizeFactor" value="100" oninput="calculateDamage()">
+                </div>
+
+                <div class="fixed-input-row">
+                    <label for="calc_sizeDamage">サイズダメージ増加 (%):</label>
+                    <input type="number" id="calc_sizeDamage" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_dmgUp">ダメージアップ (%):</label>
+                    <input type="number" id="calc_dmgUp" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_finDmgUp">最終ダメージ増加 (%):</label>
+                    <input type="number" id="calc_finDmgUp" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row pvp-item-row">
+                    <label for="calc_pvpAtkReal">PVP物理 / 魔法増強 (実数):</label>
+                    <input type="number" id="calc_pvpAtkReal" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row pvp-item-row">
+                    <label for="calc_pvpAtkPercent">PVP最終物理 / 魔法増強 (%):</label>
+                    <input type="number" id="calc_pvpAtkPercent" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row skill-item-row">
+                    <label for="calc_skillFactor">スキル倍率 (%):</label>
+                    <input type="number" id="calc_skillFactor" value="100" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row skill-item-row">
+                    <label for="calc_skillAdd">スキル加算 (実数):</label>
+                    <input type="number" id="calc_skillAdd" value="0" oninput="calculateDamage()">
+                </div>
+            </div>
+            
+            <!-- 🟦 防御側ブロック (右側) -->
+            <div class="calc-box-half dst-side-block">
+                <h3>🟦 防御側 / 軽減部分 (ターゲット・敵)</h3>
+                
+                <!-- 攻撃力の対面空欄 -->
+                <div class="fixed-input-row dummy-height-row"></div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_defPercent">最終物理 / 魔法防御力 (%):</label>
+                    <input type="number" id="calc_defPercent" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_criRes">CRIダメージ軽減 (%):</label>
+                    <input type="number" id="calc_criRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_defRealPercent">物理 / 魔法ダメージ軽減 (実数):</label>
+                    <input type="number" id="calc_defRealPercent" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_finAtkRes">最終物理 / 魔法ダメージ軽減 (%):</label>
+                    <input type="number" id="calc_finAtkRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_monsterRes">種族被ダメージ軽減 (%):</label>
+                    <input type="number" id="calc_monsterRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_attrRes">属性耐性 (%):</label>
+                    <input type="number" id="calc_attrRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <!-- 属性相性・サイズ補正の対面用空欄 -->
+                <div class="fixed-input-row dummy-height-row"></div>
+                <div class="fixed-input-row dummy-height-row"></div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_sizeRes">サイズ被ダメージ軽減 (%):</label>
+                    <input type="number" id="calc_sizeRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <!-- ダメージアップ・最終ダメージ増加の対面用空欄 -->
+                <div class="fixed-input-row dummy-height-row"></div>
+                <div class="fixed-input-row">
+                    <label for="calc_finDmgRes">最終ダメージ軽減 (%):</label>
+                    <input type="number" id="calc_finDmgRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row pvp-item-row">
+                    <label for="calc_pvpDefReal">PVP物理 / 魔法ダメージ軽減 (実数):</label>
+                    <input type="number" id="calc_pvpDefReal" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row pvp-item-row">
+                    <label for="calc_pvpDefPercent">PVP最終物理 / 魔法ダメージ軽減 (%):</label>
+                    <input type="number" id="calc_pvpDefPercent" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <!-- スキル倍率・加算の対面用空欄 -->
+                <div class="fixed-input-row dummy-height-row"></div>
+                <div class="fixed-input-row dummy-height-row"></div>
+            </div>
+            
+        </div>
+
+        <!-- 📊 計算結果パネル (ダークテーマ) -->
+        <div class="damage-output-panel">
+            <div class="out-column text-pve">
+                <h4>🍀 一般モンスター (PvE)</h4>
+                <div class="out-row">通常攻撃ダメージ: <span id="out_monNorm" class="dmg-val">-</span></div>
+                <div class="out-row">クリティカルダメージ: <span id="out_monCri" class="dmg-val">-</span></div>
+                <div class="out-row">スキルダメージ: <span id="out_monSkill" class="dmg-val">-</span></div>
+                <div class="out-row out-row-skill-cri mon-color">スキルクリティカル: <span id="out_monSkillCri" class="dmg-val">-</span></div>
+            </div>
+            <div class="out-column text-pvp">
+                <h4>⚔️ 対人戦 (PvP / GvG)</h4>
+                <div class="out-row">通常攻撃ダメージ: <span id="out_pvpNorm" class="dmg-val">-</span></div>
+                <div class="out-row">クリティカルダメージ: <span id="out_pvpCri" class="dmg-val">-</span></div>
+                <div class="out-row">スキルダメージ: <span id="out_pvpSkill" class="dmg-val">-</span></div>
+                <div class="out-row out-row-skill-cri pvp-color">スキルクリティカル: <span id="out_pvpSkillCri" class="dmg-val">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</div>
+
+<script src="js/enchant_data.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
