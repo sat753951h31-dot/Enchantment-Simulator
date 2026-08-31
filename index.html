@@ -14,6 +14,8 @@
 
     <div class="tab-navigation">
         <button id="tabBtnEnchant" class="tab-btn active-tab" onclick="switchTab('enchant')">💎 エンチャントシミュレータ</button>
+        <button id="tabBtnEquipment" class="tab-btn" onclick="switchTab('equipment')">🛡️ 装備シミュレータ</button>
+        <button id="tabBtnEtc" class="tab-btn" onclick="switchTab('etc')">☸️ その他設定</button>
         <button id="tabBtnDamage" class="tab-btn" onclick="switchTab('damage')">⚔️ ダメージ計算機</button>
     </div>
     
@@ -81,8 +83,24 @@
         <div class="bulk-section">
             <button class="btn btn-delete" onclick="resetEnchantSimulator()">🗑️ 全スロット初期化</button>
         </div>
+        
     </div>
-
+    
+    <div class="weapon-style-panel">
+        <span class="panel-title">⚔️ 武器スタイル選択:</span>
+        <div class="radio-group-row">
+            <label class="style-toggle-label label-onehand">
+                <input type="radio" id="weaponMode1" name="weaponMode" value="oneHand" checked onchange="toggleWeaponMode('enchant')"> 🛡️ 片手武器 ＋ サブ武器(盾など)
+            </label>
+            <label class="style-toggle-label label-dualwield">
+                <input type="radio" id="weaponMode3" name="weaponMode" value="dualWield" onchange="toggleWeaponMode('enchant')"> ⚔️ 二刀流 (片手武器 ＋ 片手武器)
+            </label>
+            <label class="style-toggle-label label-twohand">
+                <input type="radio" id="weaponMode2" name="weaponMode" value="twoHand" onchange="toggleWeaponMode('enchant')"> 🪵 両手武器
+            </label>
+        </div>
+    </div>
+    
     <table class="sim-table">
         <thead>
             <tr>
@@ -101,10 +119,7 @@
             <!-- 片手武器 (1〜3) -->
             <tr id="row_oneHand_1">
                 <td rowspan="9" class="cat-header">武器</td>
-                <td rowspan="3">
-                    <input type="radio" id="weaponMode1" name="weaponMode" value="oneHand" checked onchange="toggleWeaponMode()">
-                    <label for="weaponMode1">片手武器</label>
-                </td>
+                <td rowspan="3">片手武器</td>
                 <td class="slot-num">①</td>
                 <td><select id="grade_oneHand_1" onchange="calculateAll()"></select></td>
                 <td><select id="level_oneHand_1" onchange="calculateAll()"></select></td>
@@ -128,7 +143,7 @@
 
             <!-- サブ武器 (1〜3) -->
             <tr id="row_subWeapon_1">
-                <td rowspan="3">サブ武器</td>
+                <td rowspan="3" id="subWeaponLabelCell">サブ武器</td>
                 <td class="slot-num">①</td>
                 <td><select id="grade_subWeapon_1" onchange="calculateAll()"></select></td>
                 <td><select id="level_subWeapon_1" onchange="calculateAll()"></select></td>
@@ -152,10 +167,7 @@
 
             <!-- 両手武器 (1〜3) -->
             <tr id="row_twoHand_1" class="disabled-row">
-                <td rowspan="3">
-                    <input type="radio" id="weaponMode2" name="weaponMode" value="twoHand" onchange="toggleWeaponMode()">
-                    <label for="weaponMode2">両手武器</label>
-                </td>
+                <td rowspan="3">両手武器</td>
                 <td class="slot-num">①</td>
                 <td><select id="grade_twoHand_1" disabled onchange="calculateAll()"></select></td>
                 <td><select id="level_twoHand_1" disabled onchange="calculateAll()"></select></td>
@@ -361,21 +373,264 @@
     </div>
     </div>
 
-    <!-- 🌟【新設】ダメージ計算機タブの中身（既存のダメージ計算エリアを包む） -->
+    <!-- 装備シミュレータタブの中身 (将来の拡張を見据えたクリーン設計) -->
+    <div id="tabContentEquipment" class="tab-pane">
+        <div class="save-panel">
+            <!-- A面: 保存セクション（左側にスッキリ並びます） -->
+            <div class="panel-section">
+                <input type="text" id="equipPlanNameInput" placeholder="プラン名を入力（例：クリダメ特化型）">
+                <button class="btn btn-save" onclick="saveCurrentEquipmentPlan()">💾 現在の構成を保存</button>
+            </div>
+            
+            <!-- B面: 呼出・削除セクション（右側にスッキリ並びます） -->
+            <div class="panel-section">
+                <label for="savedEquipPlansSelect">📁 保存済みプラン:</label>
+                <select id="savedEquipPlansSelect" onchange="loadSelectedEquipmentPlan()">
+                    <option value="">-- プランを選択 --</option>
+                </select>
+                <button class="btn btn-delete" onclick="deleteSelectedEquipmentPlan()">🗑️ 削除</button>
+            </div>
+        </div>
+        <!-- 上段：一括コントロールと総合計のクイック確認 -->
+        <div class="equipment-top-control-block">
+            <div class="equipment-total-summary-box">
+                <h4>📊 装備＆カード総合計ステータス</h4>
+                <div class="refine-awakening-wrapper">
+                    ✨ 現在の精錬覚醒ステータス: 
+                    <span id="equipmentRefineAwakeningBadge" class="refine-awakening-badge">
+                        覚醒なし (0%)
+                    </span>
+                    <span id="equipmentEnhanceAwakeningBadge" class="refine-awakening-badge enhance-awake-badge">
+                        強化覚醒なし (0%)
+                    </span>
+                </div>
+                <div id="equipmentTotalSummaryDisplay" class="summary-grid">
+                    <p class="no-data-text">装備やカードを装着すると、ここにリアルタイムで合計が算出されます。</p>
+                </div>
+            </div>
+        </div>
+        <div class="equipment-bulk-control-panel">
+            <span class="panel-title">🛠️ 装備品一括コントロール:</span>
+            <div class="bulk-action-row">
+                <div class="bulk-item">
+                    <label for="bulkRefine">💎 全精錬一括変更:</label>
+                    <select id="bulkRefine">
+                        <option value="0">+0</option>
+                        <option value="1">+1</option><option value="2">+2</option><option value="3">+3</option>
+                        <option value="4">+4</option><option value="5">+5</option><option value="6">+6</option>
+                        <option value="7">+7</option><option value="8">+8</option><option value="9">+9</option>
+                        <option value="10">+10</option><option value="11">+11</option><option value="12">+12</option>
+                        <option value="13">+13</option><option value="14">+14</option><option value="15">+15</option>
+                    </select>
+                    <button class="btn btn-save" onclick="applyBulkRefine()">適用</button>
+                </div>
+                <div class="bulk-item">
+                    <label for="bulkEnhance">⚡ 全強化一括変更:</label>
+                    <input type="number" id="bulkEnhance" value="100" min="100" max="120" onkeydown="return filterNumberInput(event)">
+                    <button class="btn btn-save" onclick="applyBulkEnhance()">適用</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="weapon-style-panel">
+            <span class="panel-title">⚔️ 武器スタイル選択 (クイック変更):</span>
+            <div class="radio-group-row">
+                <label class="style-toggle-label label-onehand">
+                    <input type="radio" id="weaponMode1_eq" name="weaponMode_eq_group" value="oneHand" checked onchange="syncWeaponModeFromEquipment('oneHand')"> 🛡️ 片手武器 ＋ サブ武器(盾など)
+                </label>
+                <label class="style-toggle-label label-dualwield">
+                    <input type="radio" id="weaponMode3_eq" name="weaponMode_eq_group" value="dualWield" onchange="syncWeaponModeFromEquipment('dualWield')"> ⚔️ 二刀流 (片手武器 ＋ 片手武器)
+                </label>
+                <label class="style-toggle-label label-twohand">
+                    <input type="radio" id="weaponMode2_eq" name="weaponMode_eq_group" value="twoHand" onchange="syncWeaponModeFromEquipment('twoHand')"> 🪵 両手武器
+                </label>
+            </div>
+        </div>
+
+    
+        <!-- メインエリア：左右分割レイアウト -->
+        <div class="equipment-simulator-main-flex">
+            
+            <!-- 🟥 左側：装備構成スロットエリア -->
+            <div class="equipment-slots-left-box">
+                <h3>🟥 装備スロット構成</h3>
+                <p class="help-text">※各マスの選択欄をクリックして、右側の一覧から装着アイテム・カードを選んでください。</p>
+                
+                <table class="sim-table">
+                    <thead>
+                        <tr>
+                            <th>カテゴリ</th>
+                            <th>装備部位</th>
+                            <th>装備品</th>
+                            <th>精錬</th>
+                            <th>強化</th>
+                            <th>カード</th>
+                        </tr>
+                    </thead>
+                    <tbody id="equipmentSlotTableBody">
+                        <!-- JavaScriptから、指定されたスロット数（計29枠）が完璧な結合レイアウトで全自動生成されます -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 🟦 右側：部位連動・検索フィルタ付き一覧エリア -->
+            <div class="equipment-list-right-box">
+                <div class="equipment-list-sticky-header">
+                    <h3>🟦 選択可能アイテム / カード一覧</h3>
+                    <div class="active-equipment-slot-badge">
+                        選択中の部位: <span id="currentSelectedEquipmentSlotBadge">未選択 (すべて表示中)</span>
+                    </div>
+                    
+                    <!-- 検索フィルタパネル -->
+                    <div class="equipment-filter-panel">
+                        <input type="text" id="equipmentSearchNameInput" placeholder="名称で検索..." oninput="filterEquipmentListDisplay()">
+                        <input type="text" id="equipmentSearchEffectInput" placeholder="効果・ステータス名で検索（例: 貫通）..." oninput="filterEquipmentListDisplay()">
+                        <button class="btn btn-delete" onclick="clearEquipmentFilters()" style="padding: 6px 12px; font-size: 12px;">リセット</button>
+                    </div>
+                </div>
+
+                <!-- アイテムがズラリと並ぶスクロールエリア -->
+                <div id="equipmentMasterListContainer" class="equipment-items-scroll-grid">
+                    <!-- JavaScriptから条件に合うアイテムがパネルとして大量生成されます -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🌟【完全体・確定版】構成・順序・デザイン規格・計算関数を100%統一させたその他設定タブ -->
+    <div id="tabContentEtc" class="tab-pane">
+        <div class="save-panel">
+            <!-- A面: 保存セクション（左側にスッキリ並びます） -->
+            <div class="panel-section">
+                <input type="text" id="otherPlanNameInput" placeholder="プラン名を入力（例：ギルド影装MAX型）">
+                <button class="btn btn-save" onclick="saveCurrentOtherPlan()">💾 現在の構成を保存</button>
+            </div>
+            
+            <!-- B面: 呼出・削除セクション（右側にスッキリ並びます） -->
+            <div class="panel-section">
+                <label for="savedOtherPlansSelect">📁 保存済みプラン:</label>
+                <select id="savedOtherPlansSelect" onchange="loadSelectedOtherPlan()">
+                    <option value="">-- プランを選択 --</option>
+                </select>
+                <button class="btn btn-delete" onclick="deleteSelectedOtherPlan()">🗑️ 削除</button>
+            </div>
+        </div>
+        <div class="summary-container summary-top-margin">
+            <div class="summary-header">
+                <h2>📊 その他ステータス総合計</h2>
+            </div>
+            
+            <!-- 💡 ここにその他専用の合計カードがリアルタイムで美しく描画されます（クラス名を大元の summary-grid に統一） -->
+            <div id="otherTotalSummaryDisplay" class="summary-grid">
+                <p class="no-data-text">数値を入力すると、ここに合計がリアルタイムで集計されます。</p>
+            </div>
+        </div>
+
+        <!-- 3. 【設定項目】ギルドの祝福コントロールバー -->
+        <div class="other-content-box-container">
+            <!-- 1. 上部のタイトルヘッダー行 -->
+            <div class="box-header-row">
+                <div class="box-title-side">
+                    <span class="blue-vertical-line">|</span> 🏰 ギルドの祝福
+                </div>
+                <button class="btn-box-reset" onclick="resetSectionValues('guild')">リセット</button>
+            </div>
+            
+            <!-- 2. 中央を貫く薄い1本線の区切り線 -->
+            <div class="box-divider"></div>
+            
+            <!-- 3. 下部のコントロール要素エリア（ここで物理・魔法貫通のレベルを快適操作） -->
+            <div class="box-body-controls-area">
+                <div class="bulk-control-item">
+                    <span class="control-item-label">🔷 物理貫通Lv:</span>
+                    <input type="number" id="other_guild_p_pen_lv" value="0" min="0" max="100" oninput="calculateOtherTotalStatus()">
+                </div>
+                <div class="bulk-control-item">
+                    <span class="control-item-label">🔮 魔法貫通Lv:</span>
+                    <input type="number" id="other_guild_m_pen_lv" value="0" min="0" max="100" oninput="calculateOtherTotalStatus()">
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟【最終完成形】セクション2：影装（シャドウ） ギルドと100%同一規格の専用特大ボックス -->
+        <div class="other-content-box-container">
+            <!-- 1. 上部のタイトルヘッダー行 -->
+            <div class="box-header-row">
+                <div class="box-title-side">
+                    <span class="blue-vertical-line">|</span> 🔮 影装
+                </div>
+                <button class="btn-box-reset" onclick="resetSectionValues('shadow')">リセット</button>
+            </div>
+            
+            <!-- 2. 中央を貫く薄い1本線の区切り線 -->
+            <div class="box-divider"></div>
+            
+            <!-- 3. 下部のコントロール要素エリア（入力範囲を 0〜35 に美しくロック） -->
+            <div class="box-body-controls-area">
+                <div class="bulk-control-item">
+                    <span class="control-item-label">💥 PVP最終物理増強Lv:</span>
+                    <input type="number" id="other_shadow_pvp_p_amp_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                </div>
+                <div class="bulk-control-item">
+                    <span class="control-item-label">🔮 PVP最終魔法増強Lv:</span>
+                    <input type="number" id="other_shadow_pvp_m_amp_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                </div>
+                <div class="bulk-control-item">
+                    <span class="control-item-label">🛡️ PVP最終物理ダメージ軽減Lv:</span>
+                    <input type="number" id="other_shadow_pvp_p_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                </div>
+                <div class="bulk-control-item">
+                    <span class="control-item-label">🌀 PVP最終魔法ダメージ軽減Lv:</span>
+                    <input type="number" id="other_shadow_pvp_m_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                </div>
+            </div>
+        </div>
+
+        <!-- セクション3：神紋効果（マスターデータから全自動でプルダウンが生成される最進化型エリア） -->
+        <div class="other-content-box-container">
+            <div class="box-header-row">
+                <div class="box-title-side">
+                    <span class="blue-vertical-line">|</span> 🛡️ 神紋ステータス効果
+                </div>
+                <button class="btn-box-reset" onclick="resetSectionValues('sinmon')">リセット</button>
+            </div>
+            
+            <div id="sinmonTabNavigation" class="tab-navigation" style="margin-top: 10px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0;"></div>
+            
+            <div class="box-divider"></div>
+            
+            <!-- 💡 ここにJavaScriptがマスターからデータを読み込んで自動で綺麗なフォームをズラリと生成します -->
+            <div id="dynamicCrestContainer" class="sinmon-vertical-layout"></div>
+        </div>
+
+    </div>
+
+    <!-- 🌟ダメージ計算機タブの中身（既存のダメージ計算エリアを包む） -->
     <div id="tabContentDamage" class="tab-pane">
     <!-- ⚔️ ダメージシミュレータエリア -->
     <div class="damage-calc-container">
-        <h2>⚔️ ダメージシミュレータ</h2>
-        <p class="help-text">※エンチャントシミュレータの値を反映できます。さらに手動でバフ値などを上乗せ可能です。</p>
-        
-        <div class="side-toggle-panel">
-            
-            <!-- ① タイトルエリア -->
-            <div class="panel-title-row">
-                <span class="toggle-title">⚙️ エンチャントシミュレータ反映設定</span>
+        <div class="summary-container" style="margin-top: 0; margin-bottom: 25px;">
+            <div class="summary-header">
+                <h2>📊 シミュレーター反映ステータス総合計 (合算値)</h2>
+                <div style="font-size: 11px; font-weight: bold; color: #718096; background: #edf2f7; padding: 4px 10px; border-radius: 4px;">
+                    ✨ 各ページの合計データを自動集約中
+                </div>
             </div>
             
-            <!-- ② 反映先のラジオボタン行 -->
+            <!-- 💡 ここにJavaScriptが「エンチャント ＋ 装備 ＋ その他設定」をすべて足し算したカードをリアルタイム描画します -->
+            <div id="damageTotalSummaryDisplay" class="summary-grid">
+                <p class="no-data-text">各タブでステータスを設定すると、ここにすべての合計値がリアルタイムで一斉合算されます。</p>
+            </div>
+        </div>
+        
+        <div class="side-toggle-panel">
+            <!-- ① タイトル行 -->
+            <div class="panel-title-row">
+                <span class="toggle-title">🌐 シミュレータ反映設定 (全タブの総合計を一斉適用)</span>
+            </div>
+            
+            <!-- ② 反映先ラジオボタン行（提示いただいた大元のコード・ID・関数と100%完全同一化！） -->
             <div class="panel-options-row">
                 <span class="options-label">🎯 反映先：</span>
                 <label class="side-toggle-label label-src">
@@ -386,12 +641,12 @@
                 </label>
             </div>
             
-            <!-- ③ ボタンコントロール行 -->
-            <div class="panel-buttons-row">
-                <button class="btn btn-save" onclick="syncEnchantToInputs()">✨ 値を適用する</button>
-                <button class="btn btn-delete" onclick="resetCalculatorInputs()">🔄 入力初期化</button>
+            <!-- ③ ボタンコントロール行（物理用と魔法用の2つの特化ボタンへ拡張配備！） -->
+            <div class="panel-buttons-row" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;">
+                <button class="btn btn-save" onclick="applyMergedTotalToDamageFields('physical')" style="background-color: #3182ce !important; flex: 1;">💾 物理ステータスを反映</button>
+                <button class="btn btn-save" onclick="applyMergedTotalToDamageFields('magic')" style="background-color: #805ad5 !important; flex: 1;">💾 魔法ステータスを反映</button>
+                <button class="btn btn-delete" onclick="clearDamageFieldsBySelection()" style="width: auto; padding: 9px 15px;">🗑️ 初期化</button>
             </div>
-            
         </div>
         
         <div class="save-panel" style="margin-bottom: 25px;">
@@ -430,7 +685,7 @@
                 </div>
                 
                 <div class="fixed-input-row">
-                    <label for="calc_atkPercent">物理 / 魔法増強 (%):</label>
+                    <label for="calc_atkPercent">物理 / 魔法増強 (実数):</label>
                     <input type="number" id="calc_atkPercent" value="0" oninput="calculateDamage()">
                 </div>
                 
@@ -588,6 +843,9 @@
 </div>
 
 <script src="js/enchant_data.js"></script>
+<script src="js/card_data.js"></script>
+<script src="js/equip_item_data.js"></script>
+<script src="js/sinmon_item_data.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

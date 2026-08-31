@@ -1,3 +1,6 @@
+/* ==========================================================================
+   🎨 ROXシミュレータ 統合スタイルシート（バグ完全修正・クリーン統合版）
+   ========================================================================== */
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #f4f6f9;
@@ -210,6 +213,7 @@ input[type="radio"] {
     margin: 10px 0;
     font-size: 13px;
 }
+
 /* 一括変更パネルのスタイル */
 .bulk-control-panel {
     background-color: #f7fafc;
@@ -236,10 +240,10 @@ input[type="radio"] {
     width: 90px;
     padding: 5px;
 }
-/* ==========================================================================
-   メージシミュレータエリア用
-   ========================================================================== */
 
+/* ==========================================================================
+   ダメージシミュレータエリア用
+   ========================================================================== */
 .damage-calc-container {
     margin-top: 35px;
     padding: 25px;
@@ -248,7 +252,6 @@ input[type="radio"] {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
-
 .damage-calc-container h2 {
     font-size: 16px;
     color: #2c3e50;
@@ -256,23 +259,18 @@ input[type="radio"] {
     border-left: 4px solid #e53e3e;
     padding-left: 10px;
 }
-
 .damage-calc-container .help-text {
     font-size: 11px;
     color: #718096;
     margin: 0 0 20px 0;
     font-style: italic;
 }
-
-
 .calc-main-flex-container {
     display: flex;
     width: 100%;
     gap: 24px;
     box-sizing: border-box;
 }
-
-
 .calc-box-half {
     flex: 1;
     width: 50%;
@@ -282,10 +280,8 @@ input[type="radio"] {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 2px; /* 各行の隙間を均一に */
+    gap: 2px;
 }
-
-/* 攻撃側ブロックの背景と上枠線 */
 .src-side-block {
     background-color: #fffaf5;
     border-top: 4px solid #dd6b20;
@@ -297,8 +293,6 @@ input[type="radio"] {
     border-bottom: 2px solid #feebc8;
     padding-bottom: 8px;
 }
-
-/* 防御側ブロックの背景と上枠線 */
 .dst-side-block {
     background-color: #f7fafc;
     border-top: 4px solid #3182ce;
@@ -310,13 +304,11 @@ input[type="radio"] {
     border-bottom: 2px solid #ebf8ff;
     padding-bottom: 8px;
 }
-
-/* 各入力行のスタイル */
 .fixed-input-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 38px; /* 全ての行の高さを完全に均一化 */
+    height: 38px;
     padding: 0 10px;
     background-color: #fff;
     border: 1px solid #edf2f7;
@@ -326,27 +318,19 @@ input[type="radio"] {
 .fixed-input-row:hover {
     background-color: #fcfcfc;
 }
-
-/* PVP、スキル専用行の個別背景デザイン */
 .pvp-item-row { background-color: #f7fafc; border-left: 3px solid #4299e1; }
 .skill-item-row { background-color: #fffaf0; border-left: 3px solid #ed8936; }
-
-/* 左右の高さを一致させるためのダミー行用スタイル */
 .dummy-height-row {
     background-color: transparent !important;
     border: 1px solid transparent !important;
     pointer-events: none;
 }
-
-/* 各行の左側のテキストラベル */
 .fixed-input-row label {
     font-weight: 500;
     font-size: 13px;
     color: #4a5568;
     white-space: nowrap;
 }
-
-/* 各行の右端の数値フォーム */
 .fixed-input-row input[type="number"] {
     width: 100px;
     padding: 5px 8px;
@@ -362,9 +346,7 @@ input[type="radio"] {
     outline: none;
 }
 
-/* ==========================================================================
-   ダメージ最終出力パネル
-   ========================================================================== */
+/* ダメージ最終出力パネル */
 .damage-output-panel {
     margin-top: 25px;
     background-color: #1a202c;
@@ -376,34 +358,20 @@ input[type="radio"] {
     gap: 20px;
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
 }
-
 .out-column {
     flex: 1;
     min-width: 250px;
     padding: 10px 15px;
 }
-
 .text-pve {
     border-right: 1px solid #4a5568;
 }
 
-/* タブレット・スマホ用の縦並び設定 */
 @media (max-width: 900px) {
-    .calc-main-flex-container {
-        flex-direction: column;
-        gap: 20px;
-    }
-    .calc-box-half {
-        width: 100%;
-    }
-    .dummy-height-row {
-        display: none;/
-    }
-    .text-pve {
-        border-right: none;
-        border-bottom: 1px solid #4a5568;
-        padding-bottom: 20px;
-    }
+    .calc-main-flex-container { flex-direction: column; gap: 20px; }
+    .calc-box-half { width: 100%; }
+    .dummy-height-row { display: none; }
+    .text-pve { border-right: none; border-bottom: 1px solid #4a5568; padding-bottom: 20px; }
 }
 
 .damage-output-panel h4 {
@@ -425,7 +393,6 @@ input[type="radio"] {
     align-items: center;
     max-width: 320px;
 }
-
 .dmg-val {
     font-size: 18px;
     font-weight: bold;
@@ -434,9 +401,7 @@ input[type="radio"] {
 .text-pve .dmg-val { color: #48bb78; }
 .text-pvp .dmg-val { color: #f56565; }
 
-/* ==========================================================================
-   エンチャントシミュレータ反映設定パネル
-   ========================================================================== */
+/* エンチャントシミュレータ反映設定パネル */
 .side-toggle-panel {
     background-color: #fff;
     border: 1px solid #cbd5e0;
@@ -450,8 +415,6 @@ input[type="radio"] {
     box-sizing: border-box;
     width: 100%;
 }
-
-/* ① タイトル行のスタイル */
 .panel-title-row {
     width: 100%;
     border-bottom: 1px dashed #e2e8f0;
@@ -462,8 +425,6 @@ input[type="radio"] {
     font-size: 14px;
     color: #2d3748;
 }
-
-/* ② 反映先ラジオボタン行のスタイル */
 .panel-options-row {
     display: flex;
     align-items: center;
@@ -477,8 +438,6 @@ input[type="radio"] {
     color: #4a5568;
     width: 85px;
 }
-
-/* ラジオボタンの選択ラベル */
 .side-toggle-label {
     font-size: 13px;
     font-weight: bold;
@@ -496,17 +455,13 @@ input[type="radio"] {
     background-color: #f7fafc;
     border-color: #e2e8f0;
 }
-
-.label-src { color: #c53030; } /* 攻撃側テキスト：赤 */
-.label-dst { color: #2b6cb0; } /* 防御側テキスト：青 */
-
+.label-src { color: #c53030; }
+.label-dst { color: #2b6cb0; }
 .side-toggle-label input[type="radio"] {
     margin: 0;
     cursor: pointer;
     transform: scale(1.1);
 }
-
-/* ③ ボタンコントロール行のスタイル */
 .panel-buttons-row {
     display: flex;
     gap: 12px;
@@ -570,7 +525,6 @@ input[type="radio"] {
 /* ==========================================================================
    タブ切り替えシステム用スタイル
    ========================================================================== */
-
 /* タブボタンを横に並べるコンテナ */
 .tab-navigation {
     display: flex;
@@ -614,7 +568,6 @@ input[type="radio"] {
     width: 100%;
 }
 
-
 .tab-pane.active-pane {
     display: block;
     animation: fadeInTab 0.25s ease-out;
@@ -629,12 +582,10 @@ input[type="radio"] {
 /* ==========================================================================
    エンチャントステータス総合計エリア専用スタイル
    ========================================================================== */
-
 .summary-top-margin {
     margin-top: 15px;
     margin-bottom: 25px;
 }
-
 .bulk-section {
     margin-left: auto;
 }
@@ -642,11 +593,9 @@ input[type="radio"] {
 /* ==========================================================================
    ダメージ出力パネル・スキルクリティカル専用スタイル
    ========================================================================== */
-/* スキルクリティカル全体のフォントウェイトや余白の微調整 */
 .out-row-skill-cri {
     font-weight: 500;
 }
-
 /* 一般モンスター側（PvE）の黄色系の文字色指定 */
 .out-row-skill-cri.mon-color {
     color: #f6e05e;
@@ -654,11 +603,595 @@ input[type="radio"] {
 .out-row-skill-cri.mon-color .dmg-val {
     color: #ecc94b;
 }
-
 /* 対人戦側（PvP）のオレンジ系の文字色指定 */
 .out-row-skill-cri.pvp-color {
     color: #f6ad55;
 }
 .out-row-skill-cri.pvp-color .dmg-val {
     color: #f6ad55;
+}
+
+/* ==========================================================================
+   ⚔️ 武器スタイル選択専用 独立コントロールパネル
+   ========================================================================== */
+.bulk-control-panel .bulk-reset-right {
+    margin-left: auto;
+}
+.weapon-style-panel {
+    background-color: #fff;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-sizing: border-box;
+    width: 100%;
+}
+.weapon-style-panel .panel-title {
+    font-weight: bold;
+    font-size: 13px;
+    color: #2d3748;
+    flex-shrink: 0;
+}
+.weapon-style-panel .radio-group-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+}
+.weapon-style-panel .style-toggle-label {
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+.weapon-style-panel .style-toggle-label:hover {
+    background-color: #f7fafc;
+}
+.weapon-style-panel .label-onehand { color: #4a5568; }
+.weapon-style-panel .label-dualwield { color: #dd6b20; font-weight: bold; }
+.weapon-style-panel .label-twohand { color: #4a5568; }
+.weapon-style-panel .style-toggle-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+@media (max-width: 900px) {
+    .weapon-style-panel {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+    }
+    .weapon-style-panel .radio-group-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   🛡️ 装備シミュレータ専用 左右分割レイアウトスタイル
+   ========================================================================== */
+.equipment-top-control-block {
+    margin-bottom: 25px;
+    width: 100%;
+}
+.equipment-total-summary-box {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 15px 20px;
+}
+.equipment-total-summary-box h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #2b6cb0;
+    border-left: 4px solid #2b6cb0;
+    padding-left: 8px;
+}
+.equipment-simulator-main-flex {
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    align-items: flex-start;
+    box-sizing: border-box;
+}
+.equipment-slots-left-box {
+    width: 55%;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.equipment-slots-left-box h3 {
+    margin: 0 0 5px 0;
+    font-size: 15px;
+    color: #c53030;
+}
+.equipment-slots-left-box tr.active-equipment-slot-row {
+    background-color: #fffaf0 !important;
+    border: 2px solid #ed8936;
+}
+.equipment-list-right-box {
+    width: 45%;
+    background-color: #f7fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-sizing: border-box;
+    position: sticky;
+    top: 20px;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+}
+.equipment-list-right-box h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    color: #2b6cb0;
+}
+.equipment-list-sticky-header {
+    background-color: #f7fafc;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+}
+.active-equipment-slot-badge {
+    font-size: 12px;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+#currentSelectedEquipmentSlotBadge {
+    color: #e65100;
+    background-color: #fff3e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.equipment-filter-panel {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+.equipment-filter-panel input {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.equipment-items-scroll-grid {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+.equipment-item-render-panel {
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.equipment-item-render-panel:hover {
+    border-color: #3182ce;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transform: translateX(2px);
+}
+.equipment-render-info-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.equipment-render-name {
+    font-weight: bold;
+    font-size: 13px;
+    color: #2d3748;
+}
+.equipment-render-slot-tag {
+    font-size: 10px;
+    font-weight: bold;
+    color: #718096;
+    background-color: #edf2f7;
+    padding: 1px 5px;
+    border-radius: 3px;
+    width: fit-content;
+}
+.equipment-render-effects-text {
+    font-size: 11px;
+    color: #4a5568;
+    line-height: 1.4;
+}
+
+@media (max-width: 1200px) {
+    .equipment-simulator-main-flex { flex-direction: column; }
+    .equipment-slots-left-box, .equipment-list-right-box { width: 100%; }
+    .equipment-list-right-box { position: static; max-height: 500px; }
+}
+
+/* 🃏 装着カード 横並び */
+.eq-card-horizontal-flex { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
+.eq-mini-card-slot { background-color: #f7fafc; border: 1px dashed #cbd5e0; border-radius: 20px; padding: 4px 10px 4px 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.15s ease; user-select: none; box-sizing: border-box; max-width: 180px; }
+.eq-mini-card-slot:hover { border-color: #4299e1; background-color: #ebf8ff; }
+.mini-card-text-wrapper { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: #718096; }
+.mini-card-text-wrapper .mini-card-display-name { font-size: 11px; display: inline-block; }
+.mini-card-remove-btn { background: none; border: none; color: #a0aec0; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; line-height: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.mini-card-remove-btn:hover { color: #e53e3e; background-color: #fed7d7; transform: scale(1.1); }
+
+/* 右側：選択可能一覧パネル 横幅固定 */
+.equipment-list-right-box {
+    width: 45%;
+    background-color: #f7fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-sizing: border-box;
+    position: sticky;
+    top: 20px;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+}
+.equipment-list-right-box h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    color: #2b6cb0;
+}
+.equipment-list-sticky-header {
+    background-color: #f7fafc;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+}
+.active-equipment-slot-badge {
+    font-size: 12px;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+#currentSelectedEquipmentSlotBadge {
+    color: #e65100;
+    background-color: #fff3e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.equipment-filter-panel {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+.equipment-filter-panel input {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.equipment-items-scroll-grid {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+.equipment-item-render-panel {
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.equipment-item-render-panel:hover {
+    border-color: #3182ce;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transform: translateX(2px);
+}
+.equipment-render-info-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.equipment-render-name {
+    font-weight: bold;
+    font-size: 13px;
+    color: #2d3748;
+}
+.equipment-render-slot-tag {
+    font-size: 10px;
+    font-weight: bold;
+    color: #718096;
+    background-color: #edf2f7;
+    padding: 1px 5px;
+    border-radius: 3px;
+    width: fit-content;
+}
+.equipment-render-effects-text {
+    font-size: 11px;
+    color: #4a5568;
+    line-height: 1.4;
+}
+
+@media (max-width: 1200px) {
+    .equipment-simulator-main-flex { flex-direction: column; }
+    .equipment-slots-left-box, .equipment-list-right-box { width: 100%; }
+    .equipment-list-right-box { position: static; max-height: 500px; }
+}
+
+/* 🃏 装着カード 横並び */
+.eq-card-horizontal-flex { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
+.eq-mini-card-slot { background-color: #f7fafc; border: 1px dashed #cbd5e0; border-radius: 20px; padding: 4px 10px 4px 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.15s ease; user-select: none; box-sizing: border-box; max-width: 180px; }
+.eq-mini-card-slot:hover { border-color: #4299e1; background-color: #ebf8ff; }
+.mini-card-text-wrapper { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: #718096; }
+.mini-card-text-wrapper .mini-card-display-name { font-size: 11px; display: inline-block; }
+.mini-card-remove-btn { background: none; border: none; color: #a0aec0; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; line-height: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.mini-card-remove-btn:hover { color: #e53e3e; background-color: #fed7d7; transform: scale(1.1); }
+
+/* 右側：選択可能一覧パネル 横幅固定 */
+.equipment-list-right-box { width: 45% !important; max-width: 420px !important; background-color: #f7fafc !important; border: 1px solid #cbd5e0 !important; border-radius: 8px !important; padding: 15px !important; box-sizing: border-box !important; }
+.equipment-filter-panel { display: flex !important; flex-direction: row !important; gap: 6px !important; width: 100% !important; align-items: center !important; justify-content: space-between !important; box-sizing: border-box !important; }
+.equipment-filter-panel input { width: 41% !important; flex: none !important; height: 30px !important; padding: 2px 8px !important; font-size: 11px !important; border: 1px solid #cbd5e0 !important; border-radius: 4px !important; box-sizing: border-box !important; line-height: 1.2 !important; }
+.equipment-filter-panel .btn-delete { width: 68px !important; flex-shrink: 0 !important; height: 30px !important; padding: 0 !important; font-size: 11px !important; font-weight: bold !important; white-space: nowrap !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important; margin: 0 !important; }
+
+/* ✨ 精錬覚醒ステータス表示エリア */
+.refine-awakening-wrapper { margin: 10px 0; font-size: 13px; font-weight: bold; color: #4a5568; display: flex; align-items: center; gap: 8px; }
+.refine-awakening-badge { background-color: #edf2f7; color: #4a5568; padding: 3px 10px; border-radius: 20px; font-size: 12px; box-shadow: none; transition: all 0.2s ease; }
+.refine-awakening-badge.active-awake { background-color: #fff3e0; color: #dd6b20; box-shadow: 0 0 8px rgba(221, 107, 32, 0.2); }
+
+/* 🛠️ 装備シミュレータ専用：精錬・強化一括コントロールパネル */
+.equipment-bulk-control-panel { background-color: #fff !important; border: 1px solid #cbd5e0 !important; border-radius: 8px !important; padding: 12px 18px !important; margin-bottom: 20px !important; display: flex !important; align-items: center !important; gap: 20px !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; box-sizing: border-box !important; width: 100% !important; }
+.equipment-bulk-control-panel .panel-title { font-weight: bold !important; font-size: 13px !important; color: #2d3748 !important; flex-shrink: 0 !important; }
+.equipment-bulk-control-panel .bulk-action-row { display: flex !important; flex-wrap: wrap !important; gap: 24px !important; align-items: center !important; }
+.equipment-bulk-control-panel .bulk-item { display: flex !important; align-items: center !important; gap: 8px !important; }
+.equipment-bulk-control-panel .bulk-item label { font-size: 12px !important; font-weight: 500 !important; color: #4a5568 !important; white-space: nowrap !important; }
+.equipment-bulk-control-panel .bulk-item select { height: 30px !important; padding: 2px 6px !important; font-size: 12px !important; border: 1px solid #cbd5e0 !important; border-radius: 4px !important; box-sizing: border-box !important; }
+.equipment-bulk-control-panel .bulk-item input { width: 55px !important; height: 30px !important; padding: 2px 6px !important; font-size: 12px !important; text-align: center !important; border: 1px solid #cbd5e0 !important; border-radius: 4px !important; box-sizing: border-box !important; }
+.equipment-bulk-control-panel .bulk-item .btn-save { width: auto !important; padding: 6px 14px !important; height: auto !important; font-size: 13px !important; font-weight: bold !important; color: #ffffff !important; background-color: #4299e1 !important; border: 1px solid #3182ce !important; white-space: nowrap !important; flex-shrink: 0 !important; border-radius: 4px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important; margin: 0 !important; cursor: pointer !important; transition: all 0.15s ease !important; }
+.equipment-bulk-control-panel .bulk-item .btn-save:hover { background-color: #3182ce !important; border-color: #2b6cb0 !important; }
+
+/* 🛡️ 装備品（アイテム）セル専用：1行スッキリ自動省略 */
+.eq-item-text-container { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; padding: 0 2px !important; box-sizing: border-box !important; }
+.eq-item-display-name { color: #2b6cb0; font-weight: bold; cursor: pointer; font-size: 11px; text-align: left; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; flex: 1 !important; width: 0 !important; min-width: 90px !important; padding-right: 6px !important; }
+.eq-equip-remove-btn { background: none !important; border: none !important; color: #a0aec0 !important; font-size: 14px !important; font-weight: bold !important; cursor: pointer !important; padding: 0 !important; line-height: 1 !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; transition: all 0.15s !important; width: 16px !important; height: 16px !important; flex-shrink: 0 !important; z-index: 5 !important; }
+.eq-equip-remove-btn:hover { color: #e53e3e !important; background-color: #fed7d7 !important; }
+
+/* ⚡ 強化覚醒ステータス表示エリア */
+.refine-awakening-badge.enhance-awake-badge { background-color: #edf2f7; color: #4a5568; margin-left: 4px; }
+.refine-awakening-badge.enhance-awake-badge.active-enhance-awake { background-color: #ebf8ff !important; color: #2b6cb0 !important; border: 1px solid #bee3f8 !important; box-shadow: 0 0 8px rgba(66, 153, 225, 0.2) !important; }
+
+/* 👑 装備シミュレータ専用：エリートカードスロット（最終枠） */
+.eq-mini-card-slot.is-elite-slot { background-color: #fffdf5 !important; border: 1px dashed #ecc94b !important; } /* 🌟【修正完了】欠損していた閉じ括弧を100%完璧に修復しました！ */
+.eq-mini-card-slot.is-elite-slot .mini-card-display-name { color: #d69e2e !important; }
+.eq-mini-card-slot.is-elite-slot:has(.mini-card-display-name:not(:contains("空き枠"))) { background-color: #fefcbf !important; border: 1px solid #ecc94b !important; }
+.eq-mini-card-slot.is-elite-slot:has(.mini-card-display-name:not(:contains("空き枠"))) .mini-card-display-name { color: #b7791f !important; font-weight: bold !important; }
+.eq-mini-card-slot.is-elite-slot .mini-card-remove-btn:hover { color: #e53e3e !important; background-color: #feebc8 !important; }
+
+/* ==========================================================================
+   ⚙️ その他設定（etc）専用：各コンテンツボックス共通スタイル (大元干渉完全粉砕版)
+   ========================================================================== */
+/* 🌟 画像と100%完全一致する「美しい1本線白ボックス」を約束するデザイン */
+.other-content-box-container {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 18px 24px !important;       /* 画像と全く同じふっくらとした黄金比余白 */
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    display: block !important;           /* 縦長に潰れるのを完全防止 */
+}
+
+/* 上部のヘッダータイトル行 */
+.other-content-box-container .box-header-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 12px !important;
+}
+
+/* 左端の太い青線とタイトルテキスト */
+.other-content-box-container .box-title-side {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    color: #2d3748 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* 左端で格好良く輝く縦の青いアイコン線 */
+.other-content-box-container .box-title-side .blue-vertical-line {
+    color: #3182ce !important;
+    font-weight: 900 !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+}
+
+/* タイトルと入力欄を分かつ、画像通りの薄いグレーの区切り線 */
+.other-content-box-container .box-divider {
+    border: none !important;
+    border-bottom: 1px solid #edf2f7 !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+    height: 0 !important;
+}
+
+/* 🌟【大復活】構文エラーが完全に直ったため、インラインを剥ぎ取っても100%横並びが強制発動します！ */
+.other-content-box-container .box-body-controls-area {
+    display: flex !important;
+    flex-direction: row !important;      /* ⭕ 1行で美しく横並びに固定 */
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 32px !important;                /* 各ステータス同士の画像と同じ心地よい隙間 */
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 各ステータスのラベル＋入力欄の塊 */
+.other-content-box-container .bulk-control-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+/* 絵文字付き小ラベル */
+.other-content-box-container .bulk-control-item .control-item-label {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: #4a5568 !important;
+    white-space: nowrap !important;
+}
+
+/* 数値入力欄のシャープなデザイン */
+.other-content-box-container .bulk-control-item input[type="number"] {
+    width: 65px !important;
+    height: 28px !important;
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    box-sizing: border-box !important;
+    color: #2d3748 !important;
+}
+/* ==========================================================================
+   🛡️ 神紋セクション専用：1〜7枠スロット対応・美しき垂直リストデザイン
+   ========================================================================== */
+.other-content-box-container .sinmon-vertical-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* スロット1〜7までの各横長バーの装飾 */
+.sinmon-vertical-layout .sinmon-slot-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 650px !important;         /* 3つの要素が綺麗に収まるジャスト幅 */
+    padding: 8px 16px !important;
+    background-color: #fafafa !important;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+}
+
+/* 左端の「スロット 1」などの番号ラベル */
+.sinmon-slot-row .slot-index-label {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: #718096 !important;
+    width: 65px !important;
+    flex-shrink: 0 !important;
+}
+
+/* 中央のセレクトボックス群を包むエリア */
+.sinmon-slot-row .slot-selectors-group {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex: 1 !important;
+}
+
+/* ステータス効果を選ぶプルダウン（広めに確保） */
+.slot-selectors-group .sinmon-stat-select {
+    flex: 1 !important;
+    max-width: 240px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+}
+
+/* レアリティ色（白〜橙）を選ぶプルダウン */
+.slot-selectors-group .sinmon-color-select {
+    width: 110px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+}
+
+/* 🌟【新設】右端の列にピタッと並ぶ「現在のリアルタイム付与値」出力エリア */
+.sinmon-slot-row .slot-value-display-side {
+    width: 90px !important;
+    text-align: right !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: #2b6cb0 !important;          /* 共通の美しいブランドブルー */
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* ==========================================================================
+   ↺ その他設定：各コンテンツボックス専用 タイトル右端リセットボタン
+   ========================================================================== */
+/* タイトル行を「左右両端揃え」に拡張します */
+.other-content-box-container .box-header-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* タイトル右端のスマートなミニリセットボタン */
+.btn-box-reset {
+    margin-left: auto !important;        /* 💡 これを入れることで、タイトルが短くてもボタンが自動で右端へビシッと吸着します */
+    background-color: #fff !important;
+    color: #e53e3e !important;           /* 警告を表すスタイリッシュな細身の赤色 */
+    border: 1px solid #fed7d7 !important;
+    border-radius: 4px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    white-space: nowrap !important;
+}
+
+/* ボタンにマウスを乗せた（ホバー）した時のマイルドな赤色エフェクト */
+.btn-box-reset:hover {
+    background-color: #fff5f5 !important;
+    border-color: #fc8181 !important;
+    box-shadow: 0 1px 3px rgba(229, 62, 62, 0.05) !important;
 }
