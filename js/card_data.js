@@ -1,4 +1,90 @@
 const cardMaster = {
+
+  "card_317": {
+    "name": "致命・幼地竜カード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "CRIダメージ", "value": 7.0, "is_percent": true },
+      { "type": "最終物理増強", "value": 4.0, "is_percent": true }
+    ]
+  },
+
+  "card_316": {
+    "name": "貫撃・幼空竜カード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終物理貫通", "value": 6.0, "is_percent": true },
+      { "type": "最終魔法貫通", "value": 6.0, "is_percent": true },
+      { "type": "物理攻撃", "value": 3.0, "is_percent": true },
+      { "type": "魔法攻撃", "value": 3.0, "is_percent": true }
+    ]
+  },
+
+  "card_315": {
+    "name": "魔吸・幼地竜カード",
+    "slot": "鎧",
+    "is_elite": true,
+    "effects": [
+      { "type": "MaxHP", "value": 11.0, "is_percent": true },
+      { "type": "魔法HP吸収", "value": 4.0, "is_percent": true }
+    ]
+  },
+
+  "card_314": {
+    "name": "物吸・幼空竜カード",
+    "slot": "鎧",
+    "is_elite": true,
+    "effects": [
+      { "type": "VIT", "value": 39.0, "is_percent": false },
+      { "type": "物理HP吸収", "value": 4.0, "is_percent": true }
+    ]
+  },
+
+  "card_313": {
+    "name": "貫撃・大飛竜カード",
+    "slot": "武器",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終物理貫通", "value": 14.0, "is_percent": true },
+      { "type": "最終魔法貫通", "value": 14.0, "is_percent": true },
+      { "type": "物理攻撃", "value": 3.0, "is_percent": true },
+      { "type": "魔法攻撃", "value": 3.0, "is_percent": true }
+    ]
+  },
+
+  "card_312": {
+    "name": "致命・半竜人カード",
+    "slot": "武器",
+    "is_elite": true,
+    "effects": [
+      { "type": "CRIダメージ", "value": 24.0, "is_percent": true },
+      { "type": "最終物理増強", "value": 8.0, "is_percent": true }
+    ]
+  },
+
+  "card_311": {
+    "name": "強靭・大飛竜カード",
+    "slot": "肩",
+    "is_elite": true,
+    "effects": [
+      { "type": "VIT", "value": 70.0, "is_percent": false },
+      { "type": "物理攻撃", "value": 6.0, "is_percent": true },
+      { "type": "魔法攻撃", "value": 6.0, "is_percent": true }
+    ]
+  },
+
+  "card_310": {
+    "name": "体幹・半竜人カード",
+    "slot": "服装",
+    "is_elite": true,
+    "effects": [
+      { "type": "MaxHP", "value": 19.0, "is_percent": true },
+      { "type": "VIT", "value": 35.0, "is_percent": false }
+    ]
+  },
+
   "card_309": {
     "name": "焦土・魔王",
     "slot": "肩",

@@ -1195,3 +1195,54 @@ input[type="radio"] {
     border-color: #fc8181 !important;
     box-shadow: 0 1px 3px rgba(229, 62, 62, 0.05) !important;
 }
+
+/* ==========================================================================
+   ↺ その他設定：影装入力エリア
+   ========================================================================== */
+.shadow-group-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.shadow-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.shadow-card-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #475569;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #cbd5e1;
+    padding-bottom: 4px;
+}
+
+.shadow-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.shadow-item-row:last-child {
+    margin-bottom: 0;
+}
+
+.shadow-item-row label {
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.shadow-item-row input[type="number"] {
+    width: 65px;
+    padding: 4px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    text-align: right;
+    font-weight: bold;
+}

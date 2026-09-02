@@ -567,22 +567,59 @@
             <div class="box-divider"></div>
             
             <!-- 3. 下部のコントロール要素エリア（入力範囲を 0〜35 に美しくロック） -->
-            <div class="box-body-controls-area">
-                <div class="bulk-control-item">
-                    <span class="control-item-label">💥 PVP最終物理増強Lv:</span>
-                    <input type="number" id="other_shadow_pvp_p_amp_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+            <div class="shadow-group-container">
+                <!-- ⚔️ PVP属性 -->
+                <div class="shadow-card">
+                    <div class="shadow-card-title">⚔️ PVP＆サイズ</div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_pvp_p_amp_lv">💥 PVP最終物理増強Lv</label>
+                        <input type="number" id="other_shadow_pvp_p_amp_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_pvp_m_amp_lv">🔮 PVP最終魔法増強Lv</label>
+                        <input type="number" id="other_shadow_pvp_m_amp_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_pvp_p_res_lv">🛡️ PVP最終物理ダメージ軽減Lv</label>
+                        <input type="number" id="other_shadow_pvp_p_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_pvp_m_res_lv">🌀 PVP最終魔法ダメージ軽減Lv</label>
+                        <input type="number" id="other_shadow_pvp_m_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_size_dmg_lv">🗡️ 中型増加Lv（想定値）</label>
+                        <input type="number" id="other_shadow_size_dmg_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_size_res_lv">🛡️ 中型軽減Lv（想定値）</label>
+                        <input type="number" id="other_shadow_size_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
                 </div>
-                <div class="bulk-control-item">
-                    <span class="control-item-label">🔮 PVP最終魔法増強Lv:</span>
-                    <input type="number" id="other_shadow_pvp_m_amp_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
-                </div>
-                <div class="bulk-control-item">
-                    <span class="control-item-label">🛡️ PVP最終物理ダメージ軽減Lv:</span>
-                    <input type="number" id="other_shadow_pvp_p_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
-                </div>
-                <div class="bulk-control-item">
-                    <span class="control-item-label">🌀 PVP最終魔法ダメージ軽減Lv:</span>
-                    <input type="number" id="other_shadow_pvp_m_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+
+                <!-- 🎯 攻撃＆属性補正 -->
+                <div class="shadow-card">
+                    <div class="shadow-card-title">🎯 攻撃＆属性補正</div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_p_pen_lv">🗡️ 物理貫通Lv</label>
+                        <input type="number" id="other_shadow_p_pen_lv" value="0" min="0" max="50" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_m_pen_lv">🪄 魔法貫通Lv</label>
+                        <input type="number" id="other_shadow_m_pen_lv" value="0" min="0" max="50" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_cri_dmg_lv">🎯 CRIダメージ%Lv（想定値）</label>
+                        <input type="number" id="other_shadow_cri_dmg_lv" value="0" min="0" max="50" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_attr_dmg_lv">🔥 属性強化%Lv（想定値）</label>
+                        <input type="number" id="other_shadow_attr_dmg_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
+                    <div class="shadow-item-row">
+                        <label for="other_shadow_attr_res_lv">🔰 属性耐性%Lv（想定値）</label>
+                        <input type="number" id="other_shadow_attr_res_lv" value="0" min="0" max="35" oninput="calculateOtherTotalStatus()">
+                    </div>
                 </div>
             </div>
         </div>

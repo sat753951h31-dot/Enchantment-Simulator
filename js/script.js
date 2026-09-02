@@ -2135,6 +2135,58 @@ window.addEventListener('DOMContentLoaded', () => {
 // ==========================================================================
 // ⚙️ その他設定（ギルド・影装・【7枠スロット・重複ロック付】神紋）計算エンジン
 // ==========================================================================
+// 影装の段階（1～10）ごとの上昇量テーブル
+const SHADOW_TIER_TABLE = {
+    // 段階: 
+    1:  { pen: 4,  criDmg: 0.24, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 0.6 }, //1-5
+    2:  { pen: 8,  criDmg: 0.48, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 0.6 }, //6-10
+    3:  { pen: 12, criDmg: 0.72, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 1.8 }, //11-15
+    4:  { pen: 16, criDmg: 0.96, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 1.8 }, //16-20
+    5:  { pen: 20, criDmg: 1.2,  attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 2.2 }, //21-25
+    6:  { pen: 24, criDmg: 1.44, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 2.6 }, //26-30
+    7:  { pen: 28, criDmg: 1.68, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.0 }, //30-35
+    8:  { pen: 32, criDmg: 1.92, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.4 }, //36-40
+    9:  { pen: 36, criDmg: 2.16, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.8 }, //41-45
+    10: { pen: 40, criDmg: 2.4,  attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 4.2 }  //46-50
+};
+
+const shadowConfigs = [
+    { id: "other_shadow_p_pen_lv",   name: "物理貫通",   type: "pen",     isPercent: false },
+    { id: "other_shadow_m_pen_lv",   name: "魔法貫通",   type: "pen",     isPercent: false },
+    { id: "other_shadow_cri_dmg_lv", name: "CRIダメージ", type: "criDmg",  isPercent: true  },
+    { id: "other_shadow_attr_dmg_lv",name: "属性強化",   type: "attrDmg", isPercent: true  },
+    { id: "other_shadow_attr_res_lv",name: "属性耐性",   type: "attrRes", isPercent: true  },
+    { id: "other_shadow_pvp_p_amp_lv",name: "PVP最終物理増強",   type: "pvp", isPercent: true  },
+    { id: "other_shadow_pvp_m_amp_lv",name: "PVP魔法物理増強",   type: "pvp", isPercent: true  },
+    { id: "other_shadow_pvp_p_res_lv",name: "PVP最終物理ダメージ軽減",   type: "pvp", isPercent: true  },
+    { id: "other_shadow_pvp_m_res_lv",name: "PVP最終魔法ダメージ軽減",   type: "pvp", isPercent: true  },
+    { id: "other_shadow_size_dmg_lv",name: "中型モンスターダメージ増加",   type: "size", isPercent: true  },
+    { id: "other_shadow_size_res_lv",name: "中型モンスターダメージ軽減",   type: "size", isPercent: true  }
+];
+
+// 🌟 影装レベル（1～50）からステータス実数値を算出する計算関数
+const getShadowStatValue = (lv, statType) => {
+    if (lv <= 0) return 0;
+
+    // 段階(1~10)と、その段階内での進捗レベル(1~5)を算出
+    const tier = Math.min(Math.ceil(lv / 5), 10);
+    const stepInTier = ((lv - 1) % 5) + 1;
+
+    // 前の段階までの累積値 + 現在の段階の1Lvあたり上昇値 × 段階内の進捗
+    // ※例：1段階ごとの加算量をもとに計算
+    const tierData = SHADOW_TIER_TABLE[tier];
+    if (!tierData || !tierData[statType]) return 0;
+
+    // 段階ごとの上昇値×ステップ数で求めるロジック
+    let total = 0;
+    for (let t = 1; t < tier; t++) {
+        total += SHADOW_TIER_TABLE[t][statType] * 5; // 過去段階(5Lv分)の合算
+    }
+    total += tierData[statType] * stepInTier; // 現在の段階の進捗分
+
+    return Math.round(total * 100) / 100;
+};
+
 function calculateOtherTotalStatus() {
     let otherTotals = {}; // その他設定タブの中だけで完結する独立した集計箱
 
@@ -2145,22 +2197,6 @@ function calculateOtherTotalStatus() {
         otherTotals[type].value += val;
     };
 
-    // 🌟 影装の段階累積計算用・ローカル汎用関数
-    const calcShadowTierValue = (lv) => {
-        if (lv <= 0) return 0;
-        const addShadowTier = (currentLv, start, end, coef) => {
-            const s = Math.max(Math.min(currentLv, end) - start, 0);
-            return s * coef;
-        };
-        let totalPercent = 0;
-        totalPercent += addShadowTier(lv, 0,  10, 0.6);
-        totalPercent += addShadowTier(lv, 10, 20, 1.8);
-        totalPercent += addShadowTier(lv, 20, 25, 2.2);
-        totalPercent += addShadowTier(lv, 25, 30, 2.6);
-        totalPercent += addShadowTier(lv, 30, 35, 3.0);
-        return Math.round(totalPercent * 100) / 100;
-    };
-
     // 🔍 1. 🏰 ギルドの祝福セクション
     const guildPPenLv = parseInt(document.getElementById("other_guild_p_pen_lv")?.value) || 0;
     if (guildPPenLv > 0) addOtherStat("物理貫通", guildPPenLv * 10, false);
@@ -2169,20 +2205,15 @@ function calculateOtherTotalStatus() {
     if (guildMPenLv > 0) addOtherStat("魔法貫通", guildMPenLv * 10, false);
 
     // 🔍 2. 🔮 影装（シャドウウェポン）セクション
-    const getShadowLv = (id) => parseInt(document.getElementById(id)?.value) || 0;
+    const getShadowLv = (id) => parseInt(document.getElementById(id)?.value) 
     
-    const shadowPAtkAmpLv = getShadowLv("other_shadow_pvp_p_amp_lv");
-    if (shadowPAtkAmpLv > 0) addOtherStat("PVP最終物理増強", calcShadowTierValue(shadowPAtkAmpLv), true);
-
-    const shadowMAtkAmpLv = getShadowLv("other_shadow_pvp_m_amp_lv");
-    if (shadowMAtkAmpLv > 0) addOtherStat("PVP最終魔法増強", calcShadowTierValue(shadowMAtkAmpLv), true);
-
-    const shadowPResLv = getShadowLv("other_shadow_pvp_p_res_lv");
-    if (shadowPResLv > 0) addOtherStat("PVP最終物理ダメージ軽減", calcShadowTierValue(shadowPResLv), true);
-
-    const shadowMResLv = getShadowLv("other_shadow_pvp_m_res_lv");
-    if (shadowMResLv > 0) addOtherStat("PVP最終魔法ダメージ軽減", calcShadowTierValue(shadowMResLv), true);
-
+    shadowConfigs.forEach(cfg => {
+        const lv = getShadowLv(cfg.id);
+        if (lv > 0) {
+            const val = getShadowStatValue(lv, cfg.type);
+            addOtherStat(cfg.name, val, cfg.isPercent);
+        }
+    });
 
     // ---=================================================
     // 🔍 3. 🛡️【7枠スロット重複制限対応】神紋データの集計
@@ -2267,7 +2298,20 @@ function resetSectionValues(sectionKey) {
         if (document.getElementById("other_guild_m_pen_lv")) document.getElementById("other_guild_m_pen_lv").value = "0";
     } 
     else if (sectionKey === 'shadow') {
-        const shadowIds = ["other_shadow_pvp_p_amp_lv", "other_shadow_pvp_m_amp_lv", "other_shadow_pvp_p_res_lv", "other_shadow_pvp_m_res_lv"];
+        const shadowIds = [
+          "other_shadow_pvp_p_amp_lv",
+          "other_shadow_pvp_m_amp_lv",
+          "other_shadow_pvp_p_res_lv",
+          "other_shadow_pvp_m_res_lv",
+          "other_shadow_size_dmg_lv",
+          "other_shadow_size_res_lv",
+          "other_shadow_p_pen_lv",
+          "other_shadow_m_pen_lv",
+          "other_shadow_cri_dmg_lv",
+          "other_shadow_attr_dmg_lv",
+          "other_shadow_attr_res_lv"
+        ];
+
         shadowIds.forEach(id => { if (document.getElementById(id)) document.getElementById(id).value = "0"; });
     } 
     else if (sectionKey === 'sinmon') {
@@ -2316,7 +2360,18 @@ function saveCurrentOtherPlan() {
             p_amp: document.getElementById("other_shadow_pvp_p_amp_lv")?.value || "0",
             m_amp: document.getElementById("other_shadow_pvp_m_amp_lv")?.value || "0",
             p_res: document.getElementById("other_shadow_pvp_p_res_lv")?.value || "0",
-            m_res: document.getElementById("other_shadow_pvp_m_res_lv")?.value || "0"
+            m_res: document.getElementById("other_shadow_pvp_m_res_lv")?.value || "0",
+
+            size_dmg: document.getElementById("other_shadow_size_dmg_lv")?.value || "0",
+            size_res: document.getElementById("other_shadow_size_res_lv")?.value || "0",
+
+            p_pen: document.getElementById("other_shadow_p_pen_lv")?.value || "0",
+            m_pen: document.getElementById("other_shadow_m_pen_lv")?.value || "0",
+
+            cri_dmg: document.getElementById("other_shadow_cri_dmg_lv")?.value || "0",
+
+            attr_dmg: document.getElementById("other_shadow_attr_dmg_lv")?.value || "0",
+            attr_res: document.getElementById("other_shadow_attr_res_lv")?.value || "0"
         },
         sinmonValuesObj: {} // 💡 すべての神紋の値を格納する巨大な連想配列
     };
@@ -2363,6 +2418,26 @@ function loadSelectedOtherPlan() {
         if (document.getElementById("other_shadow_pvp_m_amp_lv")) document.getElementById("other_shadow_pvp_m_amp_lv").value = plan.shadowValues.m_amp;
         if (document.getElementById("other_shadow_pvp_p_res_lv")) document.getElementById("other_shadow_pvp_p_res_lv").value = plan.shadowValues.p_res;
         if (document.getElementById("other_shadow_pvp_m_res_lv")) document.getElementById("other_shadow_pvp_m_res_lv").value = plan.shadowValues.m_res;
+        if (document.getElementById("other_shadow_size_dmg_lv"))
+            document.getElementById("other_shadow_size_dmg_lv").value = plan.shadowValues.size_dmg;
+
+        if (document.getElementById("other_shadow_size_res_lv"))
+            document.getElementById("other_shadow_size_res_lv").value = plan.shadowValues.size_res;
+
+        if (document.getElementById("other_shadow_p_pen_lv"))
+            document.getElementById("other_shadow_p_pen_lv").value = plan.shadowValues.p_pen;
+
+        if (document.getElementById("other_shadow_m_pen_lv"))
+            document.getElementById("other_shadow_m_pen_lv").value = plan.shadowValues.m_pen;
+
+        if (document.getElementById("other_shadow_cri_dmg_lv"))
+            document.getElementById("other_shadow_cri_dmg_lv").value = plan.shadowValues.cri_dmg;
+
+        if (document.getElementById("other_shadow_attr_dmg_lv"))
+            document.getElementById("other_shadow_attr_dmg_lv").value = plan.shadowValues.attr_dmg;
+
+        if (document.getElementById("other_shadow_attr_res_lv"))
+            document.getElementById("other_shadow_attr_res_lv").value = plan.shadowValues.attr_res;
     }
 
     // 💡 全神紋の一括復元処理
