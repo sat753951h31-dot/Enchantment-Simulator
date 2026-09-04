@@ -1442,13 +1442,6 @@ function calculateEquipmentTotalStatus() {
         pureRefineTotals[cleanName].value = (pureRefineTotals[cleanName].value || 0) + val;; 
     };
 
-    // 🌟 影装カスタム・キャラクター初期入力値の先出し合流
-    const getBaseInputValue = (id) => parseFloat(document.getElementById(id)?.value) || 0;
-    if (getBaseInputValue("baseInput_pen") > 0) addStat("最終物理貫通", getBaseInputValue("baseInput_pen"), true);
-    if (getBaseInputValue("baseInput_amp") > 0) addStat("最終物理増強", getBaseInputValue("baseInput_amp"), true);
-    if (getBaseInputValue("baseInput_matk_pen") > 0) addStat("最終魔法貫通", getBaseInputValue("baseInput_matk_pen"), true);
-    if (getBaseInputValue("baseInput_matk_amp") > 0) addStat("最終魔法増強", getBaseInputValue("baseInput_matk_amp"), true);
-
     // 🔍 1. 全活性部位の「精錬レベル」と「強化レベル」の最低値を同時にスキャン
     const awakeTargets = [
         "oneHand", "twoHand", "subWeapon",
@@ -1629,6 +1622,7 @@ function calculateEquipmentTotalStatus() {
                         let isPercent =
                             statName.includes("最終") ||
                             statName.includes("CRI") ||
+                            statName.includes("5秒毎HP回復") ||
                             statName.includes("%");
 
                         if (correctStatName.endsWith("%")) {
@@ -2138,26 +2132,30 @@ window.addEventListener('DOMContentLoaded', () => {
 // 影装の段階（1～10）ごとの上昇量テーブル
 const SHADOW_TIER_TABLE = {
     // 段階: 
-    1:  { pen: 4,  criDmg: 0.24, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 0.6 }, //1-5
-    2:  { pen: 8,  criDmg: 0.48, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 0.6 }, //6-10
-    3:  { pen: 12, criDmg: 0.72, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 1.8 }, //11-15
-    4:  { pen: 16, criDmg: 0.96, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 1.8 }, //16-20
-    5:  { pen: 20, criDmg: 1.2,  attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 2.2 }, //21-25
-    6:  { pen: 24, criDmg: 1.44, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 2.6 }, //26-30
-    7:  { pen: 28, criDmg: 1.68, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.0 }, //30-35
-    8:  { pen: 32, criDmg: 1.92, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.4 }, //36-40
-    9:  { pen: 36, criDmg: 2.16, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.8 }, //41-45
-    10: { pen: 40, criDmg: 2.4,  attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 4.2 }  //46-50
+    1:  { pen: 4,  criDmg: 0.24, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 0.6, amppen: 0.15 }, //1-5
+    2:  { pen: 8,  criDmg: 0.48, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 0.6, amppen: 0.3 }, //6-10
+    3:  { pen: 12, criDmg: 0.72, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 1.8, amppen: 0.45 }, //11-15
+    4:  { pen: 16, criDmg: 0.96, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 1.8, amppen: 0.6 }, //16-20
+    5:  { pen: 20, criDmg: 1.2,  attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 2.2, amppen: 0.75 }, //21-25
+    6:  { pen: 24, criDmg: 1.44, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 2.6, amppen: 0.9 }, //26-30
+    7:  { pen: 28, criDmg: 1.68, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.0, amppen: 1.05 }, //30-35
+    8:  { pen: 32, criDmg: 1.92, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.4, amppen: 1.2 }, //36-40
+    9:  { pen: 36, criDmg: 2.16, attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 3.8, amppen: 1.35 }, //41-45
+    10: { pen: 40, criDmg: 2.4,  attrDmg: 1, attrRes: 1.42857, size: 1, pvp: 4.2, amppen: 1.5 }  //46-50
 };
 
 const shadowConfigs = [
     { id: "other_shadow_p_pen_lv",   name: "物理貫通",   type: "pen",     isPercent: false },
     { id: "other_shadow_m_pen_lv",   name: "魔法貫通",   type: "pen",     isPercent: false },
+    { id: "other_shadow_p_amp_lv",name: "最終物理増強",   type: "amppen", isPercent: true  },
+    { id: "other_shadow_m_amp_lv",name: "最終魔法増強",   type: "amppen", isPercent: true  },
+    { id: "other_shadow_p_pen_lst_lv",   name: "最終物理貫通",   type: "amppen",     isPercent: true },
+    { id: "other_shadow_m_pen_lst_lv",   name: "最終魔法貫通",   type: "amppen",     isPercent: true },
     { id: "other_shadow_cri_dmg_lv", name: "CRIダメージ", type: "criDmg",  isPercent: true  },
     { id: "other_shadow_attr_dmg_lv",name: "属性強化",   type: "attrDmg", isPercent: true  },
     { id: "other_shadow_attr_res_lv",name: "属性耐性",   type: "attrRes", isPercent: true  },
     { id: "other_shadow_pvp_p_amp_lv",name: "PVP最終物理増強",   type: "pvp", isPercent: true  },
-    { id: "other_shadow_pvp_m_amp_lv",name: "PVP魔法物理増強",   type: "pvp", isPercent: true  },
+    { id: "other_shadow_pvp_m_amp_lv",name: "PVP最終魔法増強",   type: "pvp", isPercent: true  },
     { id: "other_shadow_pvp_p_res_lv",name: "PVP最終物理ダメージ軽減",   type: "pvp", isPercent: true  },
     { id: "other_shadow_pvp_m_res_lv",name: "PVP最終魔法ダメージ軽減",   type: "pvp", isPercent: true  },
     { id: "other_shadow_size_dmg_lv",name: "中型モンスターダメージ増加",   type: "size", isPercent: true  },
@@ -2307,6 +2305,10 @@ function resetSectionValues(sectionKey) {
           "other_shadow_size_res_lv",
           "other_shadow_p_pen_lv",
           "other_shadow_m_pen_lv",
+          "other_shadow_p_amp_lv",
+          "other_shadow_m_amp_lv",
+          "other_shadow_m_pen_lst_lv",
+          "other_shadow_p_pen_lst_lv",          
           "other_shadow_cri_dmg_lv",
           "other_shadow_attr_dmg_lv",
           "other_shadow_attr_res_lv"
@@ -2357,8 +2359,8 @@ function saveCurrentOtherPlan() {
             m_pen: document.getElementById("other_guild_m_pen_lv")?.value || "0"
         },
         shadowValues: {
-            p_amp: document.getElementById("other_shadow_pvp_p_amp_lv")?.value || "0",
-            m_amp: document.getElementById("other_shadow_pvp_m_amp_lv")?.value || "0",
+            pvp_p_amp: document.getElementById("other_shadow_pvp_p_amp_lv")?.value || "0",
+            pvp_m_amp: document.getElementById("other_shadow_pvp_m_amp_lv")?.value || "0",
             p_res: document.getElementById("other_shadow_pvp_p_res_lv")?.value || "0",
             m_res: document.getElementById("other_shadow_pvp_m_res_lv")?.value || "0",
 
@@ -2368,6 +2370,12 @@ function saveCurrentOtherPlan() {
             p_pen: document.getElementById("other_shadow_p_pen_lv")?.value || "0",
             m_pen: document.getElementById("other_shadow_m_pen_lv")?.value || "0",
 
+            p_amp: document.getElementById("other_shadow_p_amp_lv")?.value || "0",
+            m_amp: document.getElementById("other_shadow_m_amp_lv")?.value || "0",
+            
+            p_pen_lst: document.getElementById("other_shadow_p_pen_lst_lv")?.value || "0",
+            m_pen_lst: document.getElementById("other_shadow_m_pen_lst_lv")?.value || "0",
+            
             cri_dmg: document.getElementById("other_shadow_cri_dmg_lv")?.value || "0",
 
             attr_dmg: document.getElementById("other_shadow_attr_dmg_lv")?.value || "0",
@@ -2414,8 +2422,8 @@ function loadSelectedOtherPlan() {
         if (document.getElementById("other_guild_m_pen_lv")) document.getElementById("other_guild_m_pen_lv").value = plan.guildValues.m_pen;
     }
     if (plan.shadowValues) {
-        if (document.getElementById("other_shadow_pvp_p_amp_lv")) document.getElementById("other_shadow_pvp_p_amp_lv").value = plan.shadowValues.p_amp;
-        if (document.getElementById("other_shadow_pvp_m_amp_lv")) document.getElementById("other_shadow_pvp_m_amp_lv").value = plan.shadowValues.m_amp;
+        if (document.getElementById("other_shadow_pvp_p_amp_lv")) document.getElementById("other_shadow_pvp_p_amp_lv").value = plan.shadowValues.pvp_p_amp;
+        if (document.getElementById("other_shadow_pvp_m_amp_lv")) document.getElementById("other_shadow_pvp_m_amp_lv").value = plan.shadowValues.pvp_m_amp;
         if (document.getElementById("other_shadow_pvp_p_res_lv")) document.getElementById("other_shadow_pvp_p_res_lv").value = plan.shadowValues.p_res;
         if (document.getElementById("other_shadow_pvp_m_res_lv")) document.getElementById("other_shadow_pvp_m_res_lv").value = plan.shadowValues.m_res;
         if (document.getElementById("other_shadow_size_dmg_lv"))
@@ -2432,6 +2440,14 @@ function loadSelectedOtherPlan() {
 
         if (document.getElementById("other_shadow_cri_dmg_lv"))
             document.getElementById("other_shadow_cri_dmg_lv").value = plan.shadowValues.cri_dmg;
+
+        if (document.getElementById("other_shadow_p_amp_lv")) document.getElementById("other_shadow_p_amp_lv").value = plan.shadowValues.p_amp;
+        if (document.getElementById("other_shadow_m_amp_lv")) document.getElementById("other_shadow_m_amp_lv").value = plan.shadowValues.m_amp;
+        if (document.getElementById("other_shadow_p_pen_lst_lv"))
+            document.getElementById("other_shadow_p_pen_lst_lv").value = plan.shadowValues.p_pen_lst;
+
+        if (document.getElementById("other_shadow_m_pen_lst_lv"))
+            document.getElementById("other_shadow_m_pen_lst_lv").value = plan.shadowValues.m_pen_lst;
 
         if (document.getElementById("other_shadow_attr_dmg_lv"))
             document.getElementById("other_shadow_attr_dmg_lv").value = plan.shadowValues.attr_dmg;
