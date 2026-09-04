@@ -1971,7 +1971,7 @@ function calcGenericEnhance(statName, initialAdd, lv, category) {
 }
 
 // ==========================================================================
-// その他設定（ギルド・影装・神紋）専用 独立計算・出力エンジン
+// その他設定（ギルド・影装・神紋・ペット）専用 独立計算・出力エンジン
 // ==========================================================================
 
 // ==========================================================================
@@ -2123,6 +2123,7 @@ function updateSinmonOptions(crestKey) {
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof renderDynamicCrestForms === 'function') renderDynamicCrestForms();
     if (typeof renderSinmonTabNavigation === 'function') renderSinmonTabNavigation();
+    if (typeof renderPetEffectForms === 'function') renderPetEffectForms();
 });
 
 
@@ -2184,6 +2185,321 @@ const getShadowStatValue = (lv, statType) => {
 
     return Math.round(total * 100) / 100;
 };
+
+//ペット
+function renderPetEffectForms() {
+    const container = document.getElementById("petEffectContainer");
+    if (!container) return;
+
+    let html = "";
+
+    // ============================================================
+    // 🐾 1. 通常ペット効果（枠1〜3）
+    // ============================================================
+    html += `<h4 class="pet-section-title">通常ペット効果</h4>`;
+
+    const petStats = petEffectMaster["pet"].stats;
+
+    for (let slotNum = 1; slotNum <= 3; slotNum++) {
+
+        let statOptionsHtml = '<option value="none" selected>-- ペット効果を選択 --</option>';
+        for (let statKey in petStats) {
+            statOptionsHtml += `<option value="${statKey}">${petStats[statKey].label}</option>`;
+        }
+
+        let levelOptionsHtml = "";
+        for (let lv = 1; lv <= 10; lv++) {
+            levelOptionsHtml += `<option value="${lv}">Lv${lv}</option>`;
+        }
+
+        html += `
+            <div class="pet-slot-row">
+                <div class="slot-index-label">枠 ${slotNum}</div>
+
+                <div class="slot-selectors-group">
+                    <select id="pet_stat_slot_${slotNum}" class="pet-stat-select"
+                        onchange="updatePetEffectOptions(); calculateOtherTotalStatus()">
+                        ${statOptionsHtml}
+                    </select>
+
+                    <select id="pet_color_slot_${slotNum}" class="pet-color-select"
+                        onchange="calculateOtherTotalStatus()">
+                        <option value="none">未解放</option>
+                        <option value="white">白</option>
+                        <option value="blue">青</option>
+                        <option value="purple">紫</option>
+                        <option value="orange">橙</option>
+                    </select>
+
+                    <select id="pet_level_slot_${slotNum}" class="pet-level-select"
+                        onchange="calculateOtherTotalStatus()">
+                        ${levelOptionsHtml}
+                    </select>
+                </div>
+
+                <div id="pet_val_display_${slotNum}" class="slot-value-display-side">-</div>
+            </div>
+        `;
+    }
+
+    // ============================================================
+    // 🟥 2. 才能スキル（攻撃側）枠4・枠5
+    // ============================================================
+    html += `<h4 class="pet-section-title">才能スキル（攻撃側）※1つだけ選択可能</h4>`;
+
+    const atkTraits = [
+        { key: "pvp_final_p_atk_up", label: "PVP最終物理増強" },
+        { key: "pvp_final_m_atk_up", label: "PVP最終魔法増強" }
+    ];
+
+    let slotNum = 4;
+
+    atkTraits.forEach(trait => {
+        html += `
+            <div class="pet-slot-row">
+                <div class="slot-index-label">枠 ${slotNum}</div>
+
+                <div class="slot-selectors-group">
+
+                    <select id="pet_trait_type_${slotNum}" class="pet-stat-select" disabled>
+                        <option value="${trait.key}">${trait.label}</option>
+                    </select>
+
+                    <select id="pet_trait_color_${slotNum}" class="pet-color-select"
+                        onchange="updatePetTraitOptions(); calculateOtherTotalStatus()">
+                        <option value="normal">通常</option>
+                        <option value="rainbow">虹</option>
+                    </select>
+
+                    <select id="pet_trait_rank_${slotNum}" class="pet-level-select"
+                        onchange="updatePetTraitOptions(); calculateOtherTotalStatus()">
+                        <option value="0">ペットなし</option>
+                        <option value="1">★1</option>
+                        <option value="2">★2</option>
+                        <option value="3">★3</option>
+                        <option value="4">★4</option>
+                        <option value="5">★5</option>
+                    </select>
+                </div>
+
+                <div id="pet_trait_val_display_${slotNum}" class="slot-value-display-side">-</div>
+            </div>
+        `;
+        slotNum++;
+    });
+
+    // ============================================================
+    // 🟦 3. 才能スキル（防御側）枠6・枠7
+    // ============================================================
+    html += `<h4 class="pet-section-title">才能スキル（防御側）※虹なら2つ同時発動</h4>`;
+
+    const defTraits = [
+        { key: "pvp_final_p_dmg_res", label: "PVP最終物理ダメージ軽減" },
+        { key: "pvp_final_m_dmg_res", label: "PVP最終魔法ダメージ軽減" }
+    ];
+
+    defTraits.forEach(trait => {
+        html += `
+            <div class="pet-slot-row">
+                <div class="slot-index-label">枠 ${slotNum}</div>
+
+                <div class="slot-selectors-group">
+
+                    <select id="pet_trait_type_${slotNum}" class="pet-stat-select" disabled>
+                        <option value="${trait.key}">${trait.label}</option>
+                    </select>
+
+                    <select id="pet_trait_color_${slotNum}" class="pet-color-select"
+                        onchange="updatePetTraitOptions(); calculateOtherTotalStatus()">
+                        <option value="normal">通常</option>
+                        <option value="rainbow">虹</option>
+                    </select>
+
+                    <select id="pet_trait_rank_${slotNum}" class="pet-level-select"
+                        onchange="updatePetTraitOptions(); calculateOtherTotalStatus()">
+                        <option value="0">ペットなし</option>
+                        <option value="1">★1</option>
+                        <option value="2">★2</option>
+                        <option value="3">★3</option>
+                        <option value="4">★4</option>
+                        <option value="5">★5</option>
+                    </select>
+                </div>
+
+                <div id="pet_trait_val_display_${slotNum}" class="slot-value-display-side">-</div>
+            </div>
+        `;
+        slotNum++;
+    });
+
+    container.innerHTML = html;
+
+    updatePetEffectOptions();
+    updatePetTraitOptions();
+}
+
+function updatePetEffectOptions() {
+    const petStats = petEffectMaster["pet"].stats;
+
+    // 1. 今選ばれている効果を集める
+    const selected = [];
+    for (let i = 1; i <= 3; i++) {
+        const select = document.getElementById(`pet_stat_slot_${i}`);
+        if (!select) continue;
+        const val = select.value;
+        if (val !== "none") selected.push(val);
+    }
+
+    // 2. 各枠のステータス選択肢だけ再構築
+    for (let i = 1; i <= 3; i++) {
+        const select = document.getElementById(`pet_stat_slot_${i}`);
+        if (!select) continue;
+
+        const currentVal = select.value;
+
+        const filteredSelected = selected.filter(v => v !== currentVal);
+
+        let optionsHtml = '<option value="none">-- ペット効果を選択 --</option>';
+
+        for (let statKey in petStats) {
+            if (filteredSelected.includes(statKey)) continue;
+            optionsHtml += `<option value="${statKey}">${petStats[statKey].label}</option>`;
+        }
+
+        select.innerHTML = optionsHtml;
+
+        const hasCurrent = [...select.options].some(opt => opt.value === currentVal);
+        select.value = hasCurrent ? currentVal : "none";
+    }
+}
+
+
+
+function updatePetTraitOptions() {
+
+    // ============================================================
+    // 🟥 攻撃側（枠4・枠5）排他制御
+    // ============================================================
+    const atkSlots = [4, 5];
+    let selectedAtkSlot = null;
+
+    // どちらか選択されているか確認（★0は未選択扱い）
+    atkSlots.forEach(slot => {
+        const color = document.getElementById(`pet_trait_color_${slot}`);
+        const rank  = document.getElementById(`pet_trait_rank_${slot}`);
+
+        if (color && rank && parseInt(rank.value) > 0) {
+            selectedAtkSlot = slot;
+        }
+    });
+
+    // 排他制御
+    atkSlots.forEach(slot => {
+        const color = document.getElementById(`pet_trait_color_${slot}`);
+        const rank  = document.getElementById(`pet_trait_rank_${slot}`);
+
+        if (!color || !rank) return;
+
+        if (selectedAtkSlot === null) {
+            // どちらも未選択 → 両方有効
+            color.disabled = false;
+            rank.disabled  = false;
+        } else if (selectedAtkSlot === slot) {
+            // 選ばれた枠 → 有効
+            color.disabled = false;
+            rank.disabled  = false;
+        } else {
+            // 選ばれていない枠 → 無効化
+            color.disabled = true;
+            rank.disabled  = true;
+        }
+    });
+
+
+    // ============================================================
+    // 🟦 防御側（枠6・枠7）虹なら両方、通常なら排他
+    // ============================================================
+    const defSlots = [6, 7];
+    let hasRainbow = false;
+
+    // 虹があるか確認
+    defSlots.forEach(slot => {
+        const color = document.getElementById(`pet_trait_color_${slot}`);
+        if (color && color.value === "rainbow") {
+            hasRainbow = true;
+        }
+    });
+
+    if (hasRainbow) {
+        // 虹 → 両方有効
+        defSlots.forEach(slot => {
+            const color = document.getElementById(`pet_trait_color_${slot}`);
+            const rank  = document.getElementById(`pet_trait_rank_${slot}`);
+            if (color) color.disabled = false;
+            if (rank)  rank.disabled  = false;
+        });
+    } else {
+        // 通常 → 排他制御（★0は未選択扱い）
+        let selectedDefSlot = null;
+
+        defSlots.forEach(slot => {
+            const color = document.getElementById(`pet_trait_color_${slot}`);
+            const rank  = document.getElementById(`pet_trait_rank_${slot}`);
+
+            if (color && rank && parseInt(rank.value) > 0) {
+                selectedDefSlot = slot;
+            }
+        });
+
+        defSlots.forEach(slot => {
+            const color = document.getElementById(`pet_trait_color_${slot}`);
+            const rank  = document.getElementById(`pet_trait_rank_${slot}`);
+
+            if (!color || !rank) return;
+
+            if (selectedDefSlot === null) {
+                color.disabled = false;
+                rank.disabled  = false;
+            } else if (selectedDefSlot === slot) {
+                color.disabled = false;
+                rank.disabled  = false;
+            } else {
+                color.disabled = true;
+                rank.disabled  = true;
+            }
+        });
+    }
+}
+
+
+function calculatePetEffects() {
+    const petData = petEffectMaster["pet"].stats;
+
+    let total = {};
+
+    for (let i = 1; i <= 3; i++) {
+        const statKey = document.getElementById(`pet_stat_slot_${i}`).value;
+        const color = document.getElementById(`pet_color_slot_${i}`).value;
+
+        if (statKey === "none" || color === "none") {
+            document.getElementById(`pet_val_display_${i}`).textContent = "-";
+            continue;
+        }
+
+        const stat = petData[statKey];
+        const val = stat.values[color];
+
+        if (!total[stat.label]) {
+            total[stat.label] = { value: 0, is_percent: stat.is_percent };
+        }
+
+        total[stat.label].value += val;
+
+        document.getElementById(`pet_val_display_${i}`).textContent =
+            `+${val}${stat.is_percent ? "%" : ""}`;
+    }
+
+}
 
 function calculateOtherTotalStatus() {
     let otherTotals = {}; // その他設定タブの中だけで完結する独立した集計箱
@@ -2257,6 +2573,220 @@ function calculateOtherTotalStatus() {
             }
         }
     }
+    
+    // ---=================================================
+    // 🔍 3.5 🐾 ペット効果（枠1〜3）
+    // ---=================================================
+    if (typeof petEffectMaster !== 'undefined') {
+
+        const petStats = petEffectMaster["pet"].stats;
+
+        for (let slotNum = 1; slotNum <= 3; slotNum++) {
+
+            const statSelect  = document.getElementById(`pet_stat_slot_${slotNum}`);
+            const colorSelect = document.getElementById(`pet_color_slot_${slotNum}`);
+            const levelSelect = document.getElementById(`pet_level_slot_${slotNum}`);
+            const displayEl   = document.getElementById(`pet_val_display_${slotNum}`);
+
+            const selectedStatKey  = statSelect ? statSelect.value : "none";
+            const selectedColorKey = colorSelect ? colorSelect.value : "none";
+            const selectedLv       = levelSelect ? parseInt(levelSelect.value) : 0;
+
+            if (selectedStatKey !== "none" &&
+                selectedColorKey !== "none" &&
+                selectedLv > 0 &&
+                petStats[selectedStatKey]) {
+
+                const targetStat = petStats[selectedStatKey];
+                const baseVal    = targetStat.values[selectedColorKey];
+
+                // ★ 誤差対策：小数第2位まで丸める
+                const rawVal     = baseVal * selectedLv;
+                const finalVal   = Math.round(rawVal * 100) / 100;
+
+                const unit       = targetStat.is_percent ? "%" : "";
+
+                // 表示更新
+                if (displayEl) {
+                    displayEl.textContent = `+${finalVal}${unit}`;
+                }
+
+                // ステータス名クリーン化
+                let correctStatName = targetStat.label;
+                if (typeof cleanStatNameByPercentFlag === 'function') {
+                    correctStatName = cleanStatNameByPercentFlag(correctStatName, targetStat.is_percent);
+                }
+
+                // 合計へ加算
+                addOtherStat(correctStatName, finalVal, targetStat.is_percent);
+
+            } else {
+                if (displayEl) displayEl.textContent = "-";
+            }
+        }
+    }
+
+
+    // ---=================================================
+    // 🔍 3.7 🐾 ペット才能スキル（枠4〜7）
+    // ---=================================================
+    if (typeof petTraitMaster !== 'undefined') {
+
+        const traitData = petTraitMaster["pet_traits"];
+
+        const traitOrder = [
+            "pvp_final_p_atk_up",     // 枠4
+            "pvp_final_m_atk_up",     // 枠5
+            "pvp_final_p_dmg_res",    // 枠6
+            "pvp_final_m_dmg_res"     // 枠7
+        ];
+
+        // ============================================================
+        // 🟥 攻撃側（枠4・枠5）★0対応＋誤差対策
+        // ============================================================
+        let atkSelectedSlot = null;
+
+        [4, 5].forEach(slotNum => {
+            const rank = document.getElementById(`pet_trait_rank_${slotNum}`);
+            if (rank && parseInt(rank.value) > 0) {
+                atkSelectedSlot = slotNum;
+            }
+        });
+
+        if (atkSelectedSlot !== null) {
+
+            const traitKey = traitOrder[atkSelectedSlot - 4];
+            const trait = traitData[traitKey];
+
+            const colorSelect = document.getElementById(`pet_trait_color_${atkSelectedSlot}`);
+            const rankSelect  = document.getElementById(`pet_trait_rank_${atkSelectedSlot}`);
+            const displayEl   = document.getElementById(`pet_trait_val_display_${atkSelectedSlot}`);
+
+            const colorKey = colorSelect.value;
+            const rank     = parseInt(rankSelect.value);
+
+            const baseVal  = trait.values[colorKey];
+
+            // ★ 誤差対策
+            const rawVal   = baseVal * rank;
+            const finalVal = Math.round(rawVal * 100) / 100;
+
+            const unit     = trait.is_percent ? "%" : "";
+
+            displayEl.textContent = `+${finalVal}${unit}`;
+
+            let correctStatName = trait.label;
+            if (typeof cleanStatNameByPercentFlag === 'function') {
+                correctStatName = cleanStatNameByPercentFlag(correctStatName, trait.is_percent);
+            }
+
+            addOtherStat(correctStatName, finalVal, trait.is_percent);
+
+        } else {
+            [4, 5].forEach(slotNum => {
+                const displayEl = document.getElementById(`pet_trait_val_display_${slotNum}`);
+                if (displayEl) displayEl.textContent = "-";
+            });
+        }
+
+
+        // ============================================================
+        // 🟦 防御側（枠6・枠7）虹なら両方、通常なら排他＋誤差対策
+        // ============================================================
+        let hasRainbow = false;
+
+        [6, 7].forEach(slotNum => {
+            const color = document.getElementById(`pet_trait_color_${slotNum}`);
+            if (color && color.value === "rainbow") {
+                hasRainbow = true;
+            }
+        });
+
+        if (hasRainbow) {
+
+            // 虹 → 両方計算
+            [6, 7].forEach(slotNum => {
+                const traitKey = traitOrder[slotNum - 4];
+                const trait = traitData[traitKey];
+
+                const colorSelect = document.getElementById(`pet_trait_color_${slotNum}`);
+                const rankSelect  = document.getElementById(`pet_trait_rank_${slotNum}`);
+                const displayEl   = document.getElementById(`pet_trait_val_display_${slotNum}`);
+
+                const rank = parseInt(rankSelect.value);
+                if (rank === 0) {
+                    displayEl.textContent = "-";
+                    return;
+                }
+
+                const baseVal  = trait.values[colorSelect.value];
+
+                // ★ 誤差対策
+                const rawVal   = baseVal * rank;
+                const finalVal = Math.round(rawVal * 100) / 100;
+
+                const unit     = trait.is_percent ? "%" : "";
+
+                displayEl.textContent = `+${finalVal}${unit}`;
+
+                let correctStatName = trait.label;
+                if (typeof cleanStatNameByPercentFlag === 'function') {
+                    correctStatName = cleanStatNameByPercentFlag(correctStatName, trait.is_percent);
+                }
+
+                addOtherStat(correctStatName, finalVal, trait.is_percent);
+            });
+
+        } else {
+
+            // 通常 → 排他
+            let defSelectedSlot = null;
+
+            [6, 7].forEach(slotNum => {
+                const rank = document.getElementById(`pet_trait_rank_${slotNum}`);
+                if (rank && parseInt(rank.value) > 0) {
+                    defSelectedSlot = slotNum;
+                }
+            });
+
+            if (defSelectedSlot !== null) {
+
+                const traitKey = traitOrder[defSelectedSlot - 4];
+                const trait = traitData[traitKey];
+
+                const colorSelect = document.getElementById(`pet_trait_color_${defSelectedSlot}`);
+                const rankSelect  = document.getElementById(`pet_trait_rank_${defSelectedSlot}`);
+                const displayEl   = document.getElementById(`pet_trait_val_display_${defSelectedSlot}`);
+
+                const rank = parseInt(rankSelect.value);
+
+                const baseVal  = trait.values[colorSelect.value];
+
+                // ★ 誤差対策
+                const rawVal   = baseVal * rank;
+                const finalVal = Math.round(rawVal * 100) / 100;
+
+                const unit     = trait.is_percent ? "%" : "";
+
+                displayEl.textContent = `+${finalVal}${unit}`;
+
+                let correctStatName = trait.label;
+                if (typeof cleanStatNameByPercentFlag === 'function') {
+                    correctStatName = cleanStatNameByPercentFlag(correctStatName, trait.is_percent);
+                }
+
+                addOtherStat(correctStatName, finalVal, trait.is_percent);
+
+            } else {
+                [6, 7].forEach(slotNum => {
+                    const displayEl = document.getElementById(`pet_trait_val_display_${slotNum}`);
+                    if (displayEl) displayEl.textContent = "-";
+                });
+            }
+        }
+    }
+
+
 
     // ---=================================================
     // 🔍 4. 📊 その他設定画面専用の合計カードリアルタイム描画
@@ -2330,6 +2860,52 @@ function resetSectionValues(sectionKey) {
             }
         }
     }
+    else if (sectionKey === 'pet') {
+
+        // --- 通常ペット効果（枠1〜3） ---
+        for (let slotNum = 1; slotNum <= 3; slotNum++) {
+
+            const statSelect  = document.getElementById(`pet_stat_slot_${slotNum}`);
+            const colorSelect = document.getElementById(`pet_color_slot_${slotNum}`);
+            const levelSelect = document.getElementById(`pet_level_slot_${slotNum}`);
+            const displayEl   = document.getElementById(`pet_val_display_${slotNum}`);
+
+            if (statSelect)  statSelect.value  = "none";
+            if (colorSelect) colorSelect.value = "none";
+            if (levelSelect) levelSelect.value = "1";
+            if (displayEl)   displayEl.textContent = "-";
+        }
+
+        // --- 才能スキル（枠4〜7） ---
+        const traitSlots = [4, 5, 6, 7];
+
+        traitSlots.forEach(slotNum => {
+            const colorSelect = document.getElementById(`pet_trait_color_${slotNum}`);
+            const rankSelect  = document.getElementById(`pet_trait_rank_${slotNum}`);
+            const displayEl   = document.getElementById(`pet_trait_val_display_${slotNum}`);
+
+            if (colorSelect) colorSelect.value = "normal"; // 初期値は normal
+            if (rankSelect)  rankSelect.value  = "0";      // ★0＝ペットなし
+            if (displayEl)   displayEl.textContent = "-";
+        });
+
+        // --- ペット効果の候補リストをリセット ---
+        if (typeof updatePetEffectOptions === "function") {
+            updatePetEffectOptions();
+        }
+        
+        // --- 才能スキルの選択制御を再適用 ---
+        if (typeof updatePetTraitOptions === "function") {
+            updatePetTraitOptions();
+        }
+
+        // --- 最終合計を再計算 ---
+        if (typeof calculateOtherTotalStatus === 'function') {
+            calculateOtherTotalStatus();
+        }
+    }
+
+    
     if (typeof calculateOtherTotalStatus === 'function') {
         calculateOtherTotalStatus();
     }
@@ -2357,6 +2933,21 @@ function saveCurrentOtherPlan() {
         guildValues: {
             p_pen: document.getElementById("other_guild_p_pen_lv")?.value || "0",
             m_pen: document.getElementById("other_guild_m_pen_lv")?.value || "0"
+        },
+        petValues: {
+            // 通常ペット効果（枠1〜3）
+            slots: [1, 2, 3].map(slotNum => ({
+                slot: slotNum,
+                stat:  document.getElementById(`pet_stat_slot_${slotNum}`)?.value || "none",
+                color: document.getElementById(`pet_color_slot_${slotNum}`)?.value || "none",
+                level: document.getElementById(`pet_level_slot_${slotNum}`)?.value || "1"
+            })),
+            // 才能スキル（枠4〜7）
+            traits: [4, 5, 6, 7].map(slotNum => ({
+                slot: slotNum,
+                color: document.getElementById(`pet_trait_color_${slotNum}`)?.value || "normal",
+                rank:  document.getElementById(`pet_trait_rank_${slotNum}`)?.value || "0"
+            }))
         },
         shadowValues: {
             pvp_p_amp: document.getElementById("other_shadow_pvp_p_amp_lv")?.value || "0",
@@ -2421,6 +3012,44 @@ function loadSelectedOtherPlan() {
         if (document.getElementById("other_guild_p_pen_lv")) document.getElementById("other_guild_p_pen_lv").value = plan.guildValues.p_pen;
         if (document.getElementById("other_guild_m_pen_lv")) document.getElementById("other_guild_m_pen_lv").value = plan.guildValues.m_pen;
     }
+    
+    if (plan.petValues) {
+
+        // 通常ペット効果（枠1〜3）
+        if (Array.isArray(plan.petValues.slots)) {
+            plan.petValues.slots.forEach(item => {
+                const statSelect  = document.getElementById(`pet_stat_slot_${item.slot}`);
+                const colorSelect = document.getElementById(`pet_color_slot_${item.slot}`);
+                const levelSelect = document.getElementById(`pet_level_slot_${item.slot}`);
+
+                if (statSelect)  statSelect.value  = item.stat;
+                if (colorSelect) colorSelect.value = item.color;
+                if (levelSelect) levelSelect.value = item.level;
+            });
+        }
+
+        // 才能スキル（枠4〜7）
+        if (Array.isArray(plan.petValues.traits)) {
+            plan.petValues.traits.forEach(item => {
+                const colorSelect = document.getElementById(`pet_trait_color_${item.slot}`);
+                const rankSelect  = document.getElementById(`pet_trait_rank_${item.slot}`);
+
+                if (colorSelect) colorSelect.value = item.color;
+                if (rankSelect)  rankSelect.value  = item.rank;
+            });
+        }
+
+        // ペット効果の重複禁止ロック再計算
+        if (typeof updatePetEffectOptions === "function") {
+            updatePetEffectOptions();
+        }
+
+        // 才能スキルの選択制御再適用
+        if (typeof updatePetTraitOptions === "function") {
+            updatePetTraitOptions();
+        }
+    }
+    
     if (plan.shadowValues) {
         if (document.getElementById("other_shadow_pvp_p_amp_lv")) document.getElementById("other_shadow_pvp_p_amp_lv").value = plan.shadowValues.pvp_p_amp;
         if (document.getElementById("other_shadow_pvp_m_amp_lv")) document.getElementById("other_shadow_pvp_m_amp_lv").value = plan.shadowValues.pvp_m_amp;

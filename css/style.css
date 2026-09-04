@@ -1246,3 +1246,101 @@ input[type="radio"] {
     text-align: right;
     font-weight: bold;
 }
+
+/* ==========================================================================
+   🐾 ペット効果セクション専用：神紋と同じ垂直リストデザイン
+   ========================================================================== */
+
+.other-content-box-container .pet-effect-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 枠1〜3の横長バー（神紋と同じ） */
+.pet-effect-layout .pet-slot-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 650px !important;
+    padding: 8px 16px !important;
+    background-color: #fafafa !important;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+}
+
+/* 左端の枠番号（神紋と同じ） */
+.pet-slot-row .slot-index-label {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: #718096 !important;
+    width: 65px !important;
+    flex-shrink: 0 !important;
+}
+
+/* セレクト群（効果・色・レベル） */
+.pet-slot-row .slot-selectors-group {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex: 1 !important;
+}
+
+/* 効果選択（神紋のステータス選択と同じ） */
+.slot-selectors-group .pet-stat-select {
+    flex: 1 !important;
+    max-width: 240px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+}
+
+/* 色選択（神紋と同じ） */
+.slot-selectors-group .pet-color-select {
+    width: 110px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+}
+
+/* レベル選択（新規追加） */
+.slot-selectors-group .pet-level-select {
+    width: 80px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+    background-color: #fff !important;
+}
+
+/* 右端の値表示（神紋と同じ） */
+.pet-slot-row .slot-value-display-side {
+    width: 90px !important;
+    text-align: right !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: #2b6cb0 !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+.pet-section-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4a5568;
+    margin: 12px 0 6px 4px;
+    border-left: 4px solid #3182ce;
+    padding-left: 8px;
+}

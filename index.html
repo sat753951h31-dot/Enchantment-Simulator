@@ -553,7 +553,29 @@
             </div>
         </div>
 
-        <!-- 🌟【最終完成形】セクション2：影装（シャドウ） ギルドと100%同一規格の専用特大ボックス -->
+        <!-- ペット -->
+        <div class="other-content-box-container">
+            <div class="box-header-row">
+                <div class="box-title-side">
+                    <span class="blue-vertical-line">|</span> 🛡️ ペット効果
+                </div>
+                <button class="btn-box-reset" onclick="resetSectionValues('pet')">リセット</button>
+            </div>
+
+            <div class="box-divider"></div>
+
+            <!-- 通常ペット効果（枠1〜3） -->
+            <div id="petEffectContainer" class="pet-effect-layout"></div>
+
+            <!-- 才能スキル（攻撃側） -->
+            <div id="petTraitAtkContainer" class="pet-effect-layout"></div>
+
+            <!-- 才能スキル（防御側） -->
+            <div id="petTraitDefContainer" class="pet-effect-layout"></div>
+        </div>
+
+        
+        <!-- 影装 -->
         <div class="other-content-box-container">
             <!-- 1. 上部のタイトルヘッダー行 -->
             <div class="box-header-row">
@@ -625,7 +647,7 @@
                         <input type="number" id="other_shadow_m_pen_lst_lv" value="0" min="0" max="50" oninput="calculateOtherTotalStatus()">
                     </div>
                     <div class="shadow-item-row">
-                        <label for="other_shadow_cri_dmg_lv">🎯 CRIダメージ%Lv（想定値）</label>
+                        <label for="other_shadow_cri_dmg_lv">🎯 CRIダメージ%Lv</label>
                         <input type="number" id="other_shadow_cri_dmg_lv" value="0" min="0" max="50" oninput="calculateOtherTotalStatus()">
                     </div>
                     <div class="shadow-item-row">
@@ -640,7 +662,7 @@
             </div>
         </div>
 
-        <!-- セクション3：神紋効果（マスターデータから全自動でプルダウンが生成される最進化型エリア） -->
+        <!-- 神紋効果 -->
         <div class="other-content-box-container">
             <div class="box-header-row">
                 <div class="box-title-side">
@@ -652,8 +674,7 @@
             <div id="sinmonTabNavigation" class="tab-navigation" style="margin-top: 10px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0;"></div>
             
             <div class="box-divider"></div>
-            
-            <!-- 💡 ここにJavaScriptがマスターからデータを読み込んで自動で綺麗なフォームをズラリと生成します -->
+
             <div id="dynamicCrestContainer" class="sinmon-vertical-layout"></div>
         </div>
 
@@ -899,6 +920,7 @@
 <script src="js/card_data.js"></script>
 <script src="js/equip_item_data.js"></script>
 <script src="js/sinmon_item_data.js"></script>
+<script src="js/pet_data.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>
