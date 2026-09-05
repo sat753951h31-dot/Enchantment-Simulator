@@ -1845,29 +1845,34 @@ function calcPureEnhanceValue(statName, category, lv) {
     const catConfig = enhanceGrowthConfig[category];
     const growth = catConfig ? catConfig[statName] : null;
 
-    // データが存在しない、または g1 が設定されていない場合は 0 を返す
-    if (!growth || !growth.g1 || growth.g1.length === 0) {
-        return 0;
+    // 🌟 A-1. GrowthConfig にちゃんとした配列/データがある場合は「精密計算」
+    if (growth && growth.g1 && growth.g1.length > 0) {
+        let enhanceValue = 0;
+
+        // G1 (Lv 1〜10)
+        const g1Levels = growth.g1.slice(0, Math.min(lv, 10));
+        enhanceValue += g1Levels.reduce((sum, val) => sum + (val || 0), 0);
+
+        // G2〜G6 (Lv 11〜)
+        if (lv > 10) {
+            Object.keys(ENHANCE_GRADE_TIERS).forEach(gradeKey => {
+                const coef = growth[gradeKey] || 0;
+                if (coef > 0) {
+                    const tier = ENHANCE_GRADE_TIERS[gradeKey];
+                    enhanceValue += addTier(lv, tier.start, tier.end, coef);
+                }
+            });
+        }
+        return Math.floor(enhanceValue);
     }
 
-    let enhanceValue = 0;
-
-    // 1. G1 (Lv 1〜10) の加算
-    const g1Levels = growth.g1.slice(0, Math.min(lv, 10));
-    enhanceValue += g1Levels.reduce((sum, val) => sum + (val || 0), 0);
-
-    // 2. G2〜G6 (Lv 11〜) の帯加算
-    if (lv > 10) {
-        Object.keys(ENHANCE_GRADE_TIERS).forEach(gradeKey => {
-            const coef = growth[gradeKey] || 0; // 0 の場合はそのまま 0 加算
-            if (coef > 0) {
-                const tier = ENHANCE_GRADE_TIERS[gradeKey];
-                enhanceValue += addTier(lv, tier.start, tier.end, coef);
-            }
-        });
+    // 🌟 A-2. データが未設定（g1: [] 等）の場合はフォールバック：「初期加算値 × レベル」
+    if (typeof enhanceStatMaster !== 'undefined' && enhanceStatMaster[statName]) {
+        const initialAdd = enhanceStatMaster[statName][category] || 0;
+        return initialAdd * lv;
     }
 
-    return Math.floor(enhanceValue);
+    return 0;
 }
 
 // ==========================================================================
