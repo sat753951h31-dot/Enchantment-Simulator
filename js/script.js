@@ -1569,43 +1569,24 @@ function calculateEquipmentTotalStatus() {
             // B) ⚡【累積型・汎用成長エンジン：強化セクション】
             const enhanceInput = document.getElementById(`enhance_${slotId}`) || document.getElementById(`equip_enhance_${slotId}`);
             const enhanceLevel = enhanceInput ? parseInt(enhanceInput.value) || 0 : 0;
-            
+
             if (enhanceLevel > 0 && item.enhance_effects_types) {
-                let currentSlotCategory = slots[slotId]?.apiKey || item.category;
-                if (slotId === "accLeft" || slotId === "accRight") {
-                    currentSlotCategory = "アクセ";
-                } else if (slotId === "talisman") {
-                    currentSlotCategory = "お守り";
-                } else if (slotId === "subWeapon" && !isDualWieldMode) {
-                    currentSlotCategory = "サブ武器"; 
-                }
+                const categoryKey = item.category;
 
                 item.enhance_effects_types.forEach(statName => {
-                    let initialValue = 0;
-                    if (item.base_effects && Array.isArray(item.base_effects)) {
-                        const matchEffect = item.base_effects.find(eff => eff.type === statName);
-                        if (matchEffect) initialValue = matchEffect.value;
-                    }
+                    // 1. 基本となる「純粋な強化上昇値」を取得 (例: 貫通なら 641)
+                    const baseEnhanceValue = calcPureEnhanceValue(statName, categoryKey, enhanceLevel);
 
-                    let initialAdd = 0;
-                    const realItemCategory = (slotId === "subWeapon" && !isDualWieldMode) ? "サブ武器" : item.category;
-                    if (typeof enhanceStatMaster !== 'undefined' && enhanceStatMaster[statName]) {
-                        if (enhanceStatMaster[statName][realItemCategory] !== undefined) {
-                            initialAdd = enhanceStatMaster[statName][realItemCategory];
-                        }
-                    }
+                    // 2. 覚醒ボーナスを適用 (+90% なら 641 * 1.9 = 1217.9)
+                    // ※ enhanceAwakeningRate はグローバル変数またはスコープ内の変数を参照
+                    const bonusMultiplier = 1 + (enhanceAwakeningRate || 0);
+                    const finalEnhanceValue = Math.floor(baseEnhanceValue * bonusMultiplier);
 
-                    const baseStartValue = initialValue + initialAdd;
-                    const finalEnhanceValue = calcGenericEnhance(statName, baseStartValue, enhanceLevel, currentSlotCategory);
-                    
-                    let correctStatName = statName;
-                    const isPercentType = false; 
+                    // 3. ステータス名の整形
+                    let correctStatName = statName.replace("%", "");
 
-                    if (correctStatName.endsWith("%")) {
-                        correctStatName = correctStatName.replace("%", "");
-                    }
-
-                    addStat(correctStatName, finalEnhanceValue, isPercentType);
+                    // 4. 覚醒ボーナス適用済みの強化上昇分のみを追記加算
+                    addStat(correctStatName, finalEnhanceValue, false);
                 });
             }
 
@@ -1660,7 +1641,7 @@ function calculateEquipmentTotalStatus() {
 
     // ---=================================================
     // 3. 🌟【究極のツイン乗算合算処理】
-    // 精錬プールに対して、「精錬覚醒倍率 ＋ 強化覚醒倍率」の合算パーセントをダイレクトに掛け算します！
+    // 精錬プールに対して、「精錬覚醒倍率」の合算パーセントをダイレクトに掛け算します！
     // ---=================================================
     const totalAwakeningRate = refineAwakeningRate; 
 
@@ -1668,7 +1649,7 @@ function calculateEquipmentTotalStatus() {
         const refineItem = pureRefineTotals[statName];
         const baseRefineValue = refineItem.value; // 元の精錬値（例: 40%）
         
-        // 💡 精錬覚醒と強化覚醒の合算ボーナス分を綺麗に乗算算出！
+        // 💡 精錬覚醒の合算ボーナス分を綺麗に乗算算出！
         const twinAwakeBonusValue = baseRefineValue * totalAwakeningRate;
         
         // 元の精錬値に、ツイン覚醒の掛け算ボーナスを足して、最終合計へ合流！
@@ -1849,125 +1830,44 @@ function deleteSelectedEquipmentPlan() {
     }
 }
 
-function addTier(lv, start, end, coef) {
-    const s = Math.max(Math.min(lv, end) - start, 0);
-    return s * coef;
+
+// 区間加算の計算ヘルパー関数
+function addTier(currentLv, tierStart, tierEnd, coef) {
+    if (currentLv < tierStart) return 0;
+    const effectiveLv = Math.min(currentLv, tierEnd) - tierStart + 1;
+    return effectiveLv * coef;
 }
 
-// 🌟 2. 初期10レベル分の汎用計算ルール（エラー防止用ガード）
-function calcInitialGeneric(statName, initialAdd, lv) {
-    const currentLv = Math.min(lv, 10);
-    return initialAdd * currentLv;
-}
+// 🌟 強化値計算メイン関数
+function calcPureEnhanceValue(statName, category, lv) {
+    if (lv <= 0) return 0;
 
-// 🌟 3. 【最終完成形：カテゴリ最優先・汎用強化計算マシン】
-// ステータス名、初期値、現在のレベル、そして「カテゴリ（両手武器、片手武器、サブ武器等）」を渡すだけで、
-// カテゴリごとの「固有の係数（比重）」を裏側で完璧に嗅ぎ分け、1の位まで正確な累積強化値を返却します！
-function calcGenericEnhance(statName, initialAdd, lv, category) {
-    
-    // 🎨【新設計】カテゴリごとに係数（比重）を完全に分断した定数データベース
-    const tierGrowth = {
-        "両手武器": {
-            "物理攻撃": { "g2": 13, "g3": 17.8, "g4": 27.2, "g5": 31, "g6": 38 },
-            "魔法攻撃": { "g2": 13, "g3": 17.8, "g4": 27.2, "g5": 31, "g6": 38 },
-            "攻撃速度": { "h2": 7,  "h3": 7.9,  "h4": 13.8, "h5": 16, "h6": 19 }
-        },
-        "片手武器": {
-            // 🗡️【拡張枠】片手武器は両手武器に比べて比重が低くなる（例：0.75倍など）ゲーム内の実測係数をここに直書きできます！
-            "物理攻撃": { "g2": 9.75, "g3": 13.35, "g4": 20.4, "g5": 23.25, "g6": 28.5 },
-            "魔法攻撃": { "g2": 9.75, "g3": 13.35, "g4": 20.4, "g5": 23.25, "g6": 28.5 },
-            "攻撃速度": { "h2": 5.25, "h3": 5.92,  "h4": 10.35, "h5": 12,    "h6": 14.25 }
-        },
-        "サブ武器": {
-            // 🛡️【拡張枠】盾や、二刀流の左手用に適用される固有の比重係数を直書きできます！
-            "物理攻撃": { "g2": 6.5, "g3": 8.9, "g4": 13.6, "g5": 15.5, "g6": 19 },
-            "物理防御": { "i2": 3,   "i3": 5.2, "i4": 8.5,  "i5": 11,   "i6": 14 } // 今後防具等が増えてもここへ行を足すだけ！
-        },
-        "アクセ": {
-            "物理増強":    { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "魔法増強":    { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "物理貫通":    { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "魔法貫通":    { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "PVP物理増強": { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "PVP魔法増強": { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "物理攻撃":    { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 },
-            "CRI":         { "g1": [2, 3, 5, 6, 8, 9, 11 , 13 , 14, 16],
-                             "g2": 3.25, "g3": 4.45, "g4": 6.8, "g5": 7.75, "g6": 9 }
-        },
-        "お守り": {
-            "物理増強":    { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 6.40, "g3": 8.76, "g4": 13.38, "g5": 15.25, "g6": 18.70 },
-            "魔法増強":    { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 6.40, "g3": 8.76, "g4": 13.38, "g5": 15.25, "g6": 18.70 },
-            "物理貫通":    { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 6.40, "g3": 8.76, "g4": 13.38, "g5": 15.25, "g6": 18.70 },
-            "魔法貫通":    { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 6.40, "g3": 8.76, "g4": 13.38, "g5": 15.25, "g6": 18.70 },
-            "PVP物理増強": { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 6.40, "g3": 8.76, "g4": 13.38, "g5": 15.25, "g6": 18.70 },
-            "PVP魔法増強": { "g1": [3, 6, 9, 13, 16, 19, 22, 25, 28, 31],
-                             "g2": 6.40, "g3": 8.76, "g4": 13.38, "g5": 15.25, "g6": 18.70 }
-        }
-    };
-    
-    const categoryGroup = tierGrowth[category];
-    const growthGroup = categoryGroup ? categoryGroup[statName] : null;
+    const catConfig = enhanceGrowthConfig[category];
+    const growth = catConfig ? catConfig[statName] : null;
 
-    let totalValue = 0;
-
-    // -----------------------------
-    // ⭐ G1 がある場合の処理
-    // -----------------------------
-    if (growthGroup && Array.isArray(growthGroup.g1)) {
-
-        // Lv1〜10 は G1 の実測値をそのまま使う
-        if (lv <= 10) {
-            totalValue = growthGroup.g1[lv - 1];  // g1[0] が Lv1
-        } else {
-            // Lv11 以上は G1 の Lv10 を起点にする
-            totalValue = growthGroup.g1[9]; // Lv10 の値
-        }
-
-    } else {
-
-        // -----------------------------
-        // ⭐ G1 がない場合（従来の初期加算値方式）
-        // -----------------------------
-        totalValue = calcInitialGeneric(statName, initialAdd, lv);
+    // データが存在しない、または g1 が設定されていない場合は 0 を返す
+    if (!growth || !growth.g1 || growth.g1.length === 0) {
+        return 0;
     }
 
-    // -----------------------------
-    // ⭐ G2〜G6 の帯加算（共通）
-    // -----------------------------
-    
-    if (categoryGroup) {
-        // 🌟 2階層目：そのカテゴリの中にある、該当「ステータス名」の係数（g2〜g6等）を取得
-        const growthGroup = categoryGroup[statName];
-        
-        if (growthGroup) {
-            // 🌟 3階層目：素材帯（g2〜g6）をループして、お預かりした階段ルールで累積加算！
-            for (let gradeKey in growthGroup) {
-                const coef = growthGroup[gradeKey]; // カテゴリごとに完璧に差別化された本物の係数
+    let enhanceValue = 0;
 
-                // レベル帯ごとの階段累積ルール（10-30、30-50、50-70、70-90、90-120）
-                if (gradeKey.includes("2")) totalValue += addTier(lv, 10, 30, coef);
-                if (gradeKey.includes("3")) totalValue += addTier(lv, 30, 50, coef);
-                if (gradeKey.includes("4")) totalValue += addTier(lv, 50, 70, coef);
-                if (gradeKey.includes("5")) totalValue += addTier(lv, 70, 90, coef);
-                if (gradeKey.includes("6")) totalValue += addTier(lv, 90, 120, coef);
+    // 1. G1 (Lv 1〜10) の加算
+    const g1Levels = growth.g1.slice(0, Math.min(lv, 10));
+    enhanceValue += g1Levels.reduce((sum, val) => sum + (val || 0), 0);
+
+    // 2. G2〜G6 (Lv 11〜) の帯加算
+    if (lv > 10) {
+        Object.keys(ENHANCE_GRADE_TIERS).forEach(gradeKey => {
+            const coef = growth[gradeKey] || 0; // 0 の場合はそのまま 0 加算
+            if (coef > 0) {
+                const tier = ENHANCE_GRADE_TIERS[gradeKey];
+                enhanceValue += addTier(lv, tier.start, tier.end, coef);
             }
-        }
+        });
     }
 
-    // 四捨五入して、最終的に1つの「綺麗な整数値」として呼び出し元へ返却
-    return Math.floor(totalValue);
+    return Math.floor(enhanceValue);
 }
 
 // ==========================================================================
