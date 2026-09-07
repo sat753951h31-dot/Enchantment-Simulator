@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>装備強化 内部小数対応精密フィッティングツール</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #e0e0e0; padding: 20px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 8px; max-width: 650px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h2 { color: #4caf50; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em; }
+        select, input { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        .result-box { margin-top: 20px; background: #252525; padding: 15px; border-radius: 6px; border-left: 4px solid #4caf50; }
+        .stat-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1.1em; }
+        .stat-label { color: #bbb; }
+        .stat-val { font-weight: bold; color: #fff; }
+        .stat-pure { font-size: 0.85em; color: #888; margin-left: 5px; }
+        .badge { background: #333; color: #4caf50; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
+        
+        .export-box { margin-top: 25px; background: #181818; padding: 15px; border-radius: 6px; border: 1px solid #333; }
+        .export-box h3 { margin-top: 0; color: #ffca28; font-size: 1em; }
+        textarea { width: 100%; height: 220px; background: #111; color: #4caf50; border: 1px solid #333; border-radius: 4px; padding: 10px; font-family: monospace; font-size: 0.85em; box-sizing: border-box; resize: vertical; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>内部小数復元エンジン <span class="badge">TrueStep-Engine</span></h2>
+    
+    <div class="form-group">
+        <label for="partSelect">部位を選択</label>
+        <select id="partSelect" onchange="updateSimulation()"></select>
+    </div>
+
+    <div class="form-group">
+        <label for="levelInput">検証用 強化レベル (例: Lv52, Lv109など)</label>
+        <input type="number" id="levelInput" value="52" min="0" max="110" oninput="updateSimulation()">
+    </div>
+
+    <div class="result-box" id="resultContainer"></div>
+
+    <div class="export-box">
+        <h3>📋 精密確定されたデータ構造 (g1〜g6 完全整数)</h3>
+        <textarea id="configExport" readonly onclick="this.select()"></textarea>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// 1. 各部位の入力データ
+// base: 基礎値
+// step10Pure: Lv10時点の「純強化値」（= Lv10の画面値 - base）
+// targetPure: Lv110時点の「純強化値」（= Lv110の画面値 - base）
+// ==========================================
+const inputDataWithStep10AndTarget = {
+    "肩": {
+        "MaxHP":   { base: 3472, step10Pure: 1650, targetPure: 51250 },
+        "物理防御": { base: 69,   step10Pure: 46,   targetPure: 256 } // Lv1表示が「2」でもLv10純強化「46」から真の初期値2.421を復元
+    },
+    "鎧": {
+        "物理防御": { base: 122, step10Pure: 57,   targetPure: 641 },
+        "魔法防御": { base: 41,  step10Pure: 19,   targetPure: 641 }
+    }
+};
+
+// ==========================================
+// 2. 内部小数復元＆精密フィッティングロジック
+// ==========================================
+function generateTrueStepConfig(data) {
+    const config = {};
+    const G1_RATIOS = [1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8];
+    const BASE_PROFILE = { g2: 3.10, g3: 4.35, g4: 6.60, g5: 7.50, g6: 8.71 };
+
+    for (const [part, stats] of Object.entries(data)) {
+        config[part] = {};
+
+        for (const [stat, dataObj] of Object.entries(stats)) {
+            const { base, step10Pure, targetPure } = dataObj;
+
+            // 1. Lv10の純強化値から「真の小数 step1」を復元（G1倍率合計は19.0）
+            const trueStep1 = step10Pure / 19.0;
+
+            // 2. 真の小数を元に G1（Lv1〜10）の各レベル毎上昇量を四捨五入して整数確定
+            const g1Array = G1_RATIOS.map(r => Math.round(trueStep1 * r));
+            const g1Sum = g1Array.reduce((a, b) => a + b, 0);
+
+            // 3. 残りの純強化量を計算
+            const remainingPure = targetPure - g1Sum;
+            const profileSum = BASE_PROFILE.g2 + BASE_PROFILE.g3 + BASE_PROFILE.g4 + BASE_PROFILE.g5 + BASE_PROFILE.g6;
+            
+            // 4. G2〜G6の基準ユニットを算出
+            const baseUnit = remainingPure / (20 * profileSum);
+
+            // 5. 各帯の1Lvあたり加算量を整数化
+            let g2 = Math.round(baseUnit * BASE_PROFILE.g2);
+            let g3 = Math.round(baseUnit * BASE_PROFILE.g3);
+            let g4 = Math.round(baseUnit * BASE_PROFILE.g4);
+            let g5 = Math.round(baseUnit * BASE_PROFILE.g5);
+            let g6 = Math.round(baseUnit * BASE_PROFILE.g6);
+
+            // 6. 端数フィッティング（Lv110到達時の微小な丸め誤差を補正）
+            const calculatedTotal = g1Sum + 20 * (g2 + g3 + g4 + g5 + g6);
+            const diff = targetPure - calculatedTotal;
+
+            if (diff !== 0) {
+                g6 += Math.round(diff / 20);
+            }
+
+            config[part][stat] = {
+                base: base,
+                g1: g1Array,
+                g2: g2,
+                g3: g3,
+                g4: g4,
+                g5: g5,
+                g6: g6
+            };
+        }
+    }
+    return config;
+}
+
+const enhanceGrowthConfig = generateTrueStepConfig(inputDataWithStep10AndTarget);
+
+// ==========================================
+// 3. 完全整数加算計算コア
+// ==========================================
+function calculateStat(level, statConfig) {
+    if (level <= 0) return { total: statConfig.base, pure: 0 };
+
+    let pureBonus = 0;
+    const { base, g1, g2, g3, g4, g5, g6 } = statConfig;
+
+    // G1 (Lv1-10)
+    const l1 = Math.min(level, 10);
+    for (let i = 0; i < l1; i++) pureBonus += g1[i];
+
+    // G2〜G6 (固定加算)
+    if (level > 10) pureBonus += Math.min(level - 10, 20) * g2;
+    if (level > 30) pureBonus += Math.min(level - 30, 20) * g3;
+    if (level > 50) pureBonus += Math.min(level - 50, 20) * g4;
+    if (level > 70) pureBonus += Math.min(level - 70, 20) * g5;
+    if (level > 90) pureBonus += Math.min(level - 90, 20) * g6;
+
+    return { total: base + pureBonus, pure: pureBonus };
+}
+
+// ==========================================
+// 4. UI制御
+// ==========================================
+function initUI() {
+    const select = document.getElementById('partSelect');
+    select.innerHTML = '';
+    for (const part of Object.keys(enhanceGrowthConfig)) {
+        const opt = document.createElement('option');
+        opt.value = part;
+        opt.textContent = part;
+        select.appendChild(opt);
+    }
+    
+    document.getElementById('configExport').value = 
+        "const enhanceGrowthConfig = " + JSON.stringify(enhanceGrowthConfig, null, 4) + ";";
+
+    updateSimulation();
+}
+
+function updateSimulation() {
+    const part = document.getElementById('partSelect').value;
+    const level = parseInt(document.getElementById('levelInput').value) || 0;
+    const container = document.getElementById('resultContainer');
+    
+    if (!enhanceGrowthConfig[part]) return;
+
+    let html = '';
+    const stats = enhanceGrowthConfig[part];
+
+    for (const [statName, config] of Object.entries(stats)) {
+        const res = calculateStat(level, config);
+        html += `
+            <div class="stat-item">
+                <span class="stat-label">${statName}</span>
+                <div>
+                    <span class="stat-val">+${res.total.toLocaleString()}</span>
+                    <span class="stat-pure">(純強化: +${res.pure.toLocaleString()})</span>
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+window.onload = initUI;
+</script>
+
+</body>
+</html>

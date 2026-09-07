@@ -7,7 +7,13 @@ const slots = {
     foot: { id: "foot", apiKey: "防具" },
     accLeft: { id: "accLeft", apiKey: "装飾" },
     accRight: { id: "accRight", apiKey: "装飾" },
-    talisman: { id: "talisman", apiKey: "装飾" }
+    talisman: { id: "talisman", apiKey: "装飾" },
+    head:      { id: "head",      apiKey: "衣装" },
+    face:      { id: "face",      apiKey: "衣装" },
+    mouth:     { id: "mouth",     apiKey: "衣装" },
+    costume:   { id: "costume",   apiKey: "服装" },
+    back:      { id: "back",      apiKey: "背中" },
+    tail:      { id: "tail",      apiKey: "尻尾" }
 };
 
 // ステータス名統合マッピング
@@ -956,7 +962,7 @@ function initEquipmentSimulator() {
                 </td>
                 <td style="vertical-align:middle; text-align:center;">
                     ${item.hasStats ? `
-                        <input type="number" id="enhance_${item.id}" value="${savedEnhance}" min="100" max="120" 
+                        <input type="number" id="enhance_${item.id}" value="${savedEnhance}" min="0" max="120" 
                                oninput="calculateEquipmentTotalStatus()" 
                                onkeydown="return filterNumberInput(event)" 
                                style="width:50px; padding:4px; font-size:12px; text-align:center; box-sizing:border-box;">
@@ -1076,10 +1082,10 @@ function applyBulkRefine() {
 }
 
 function applyBulkEnhance() {
-    let targetEnhance = parseInt(document.getElementById("bulkEnhance").value) || 100;
+    let targetEnhance = parseInt(document.getElementById("bulkEnhance").value) || 0;
     
     // 手動で変な数字を打たれた場合も、100未満なら100、120超なら120に安全ガード
-    if (targetEnhance < 100) targetEnhance = 100;
+    if (targetEnhance < 0) targetEnhance = 0;
     if (targetEnhance > 120) targetEnhance = 120;
     document.getElementById("bulkEnhance").value = targetEnhance;
 
@@ -1830,6 +1836,63 @@ function deleteSelectedEquipmentPlan() {
     }
 }
 
+// ---=================================================
+// 💡 カテゴリ別の標準帯倍率プロファイル
+// ---=================================================
+const GRADE_RATIO_PROFILES = {
+    accessory: {
+        g1Ratios: [1.0, 1.8, 2.8, 4.0, 5.2, 6.3, 7.3, 8.3, 9.3, 10.3],
+        g2: 1.625, g3: 2.225, g4: 3.400, g5: 3.875, g6: 2.725
+    },
+    weapon: {
+        g1Ratios: [1.0, 1.9, 3.0, 4.3, 5.5, 6.7, 7.8, 8.9, 9.9, 11.0],
+        g2: 2.100, g3: 2.967, g4: 4.467, g5: 5.133, g6: 3.725
+    },
+    // 防具用（鎧・肩・靴など）
+    armor: {
+        g1Ratios: [1.0, 1.8, 2.8, 4.0, 5.2, 6.3, 7.3, 8.3, 9.3, 10.3],
+        g2: 0.580, g3: 0.800, g4: 1.220, g5: 1.390, g6: 1.000
+    }
+};
+
+// ---=================================================
+// 💡 法則性に基づいた GrowthConfig 取得・動的生成関数（修正版）
+// ---=================================================
+function getGrowthConfigWithFallback(statName, categoryKey) {
+    // A) 手動定義済みの実測データがあれば最優先で採用
+    if (typeof enhanceGrowthConfig !== 'undefined' && enhanceGrowthConfig[categoryKey]) {
+        const conf = enhanceGrowthConfig[categoryKey][statName];
+        if (conf && conf.g1 && conf.g1.length > 0) {
+            return conf;
+        }
+    }
+
+    // B) 未検証の場合、カテゴリに応じた標準プロファイルで試算
+    if (typeof enhanceStatMaster !== 'undefined' && enhanceStatMaster[statName]) {
+        const base = enhanceStatMaster[statName][categoryKey];
+        if (base && base > 0) {
+            // カテゴリ判定（武器・防具・盾は weapon プロファイル、それ以外は accessory）
+            const isWeaponOrArmor = categoryKey.includes("武器") || categoryKey.includes("短剣") || 
+                                    categoryKey.includes("盾") || categoryKey.includes("鎧") || 
+                                    categoryKey.includes("肩") || categoryKey.includes("靴");
+            
+            const profile = isWeaponOrArmor ? GRADE_RATIO_PROFILES.weapon : GRADE_RATIO_PROFILES.accessory;
+
+            const dynamicG1 = profile.g1Ratios.map(r => Math.round(base * r));
+
+            return {
+                g1: dynamicG1,
+                g2: Number((base * profile.g2).toFixed(2)),
+                g3: Number((base * profile.g3).toFixed(2)),
+                g4: Number((base * profile.g4).toFixed(2)),
+                g5: Number((base * profile.g5).toFixed(2)),
+                g6: Number((base * profile.g6).toFixed(2))
+            };
+        }
+    }
+
+    return null;
+}
 
 // 区間加算の計算ヘルパー関数
 function addTier(currentLv, tierStart, tierEnd, coef) {
@@ -1839,40 +1902,31 @@ function addTier(currentLv, tierStart, tierEnd, coef) {
 }
 
 // 🌟 強化値計算メイン関数
-function calcPureEnhanceValue(statName, category, lv) {
+function calcPureEnhanceValue(statName, categoryKey, lv) {
     if (lv <= 0) return 0;
 
-    const catConfig = enhanceGrowthConfig[category];
-    const growth = catConfig ? catConfig[statName] : null;
+    // 実測値または自動生成の設定を取得
+    const growth = getGrowthConfigWithFallback(statName, categoryKey);
+    if (!growth) return 0;
 
-    // 🌟 A-1. GrowthConfig にちゃんとした配列/データがある場合は「精密計算」
-    if (growth && growth.g1 && growth.g1.length > 0) {
-        let enhanceValue = 0;
+    let enhanceValue = 0;
 
-        // G1 (Lv 1〜10)
-        const g1Levels = growth.g1.slice(0, Math.min(lv, 10));
-        enhanceValue += g1Levels.reduce((sum, val) => sum + (val || 0), 0);
+    // 1. G1 (Lv 1〜10) の加算
+    const g1Levels = growth.g1.slice(0, Math.min(lv, 10));
+    enhanceValue += g1Levels.reduce((sum, val) => sum + (val || 0), 0);
 
-        // G2〜G6 (Lv 11〜)
-        if (lv > 10) {
-            Object.keys(ENHANCE_GRADE_TIERS).forEach(gradeKey => {
-                const coef = growth[gradeKey] || 0;
-                if (coef > 0) {
-                    const tier = ENHANCE_GRADE_TIERS[gradeKey];
-                    enhanceValue += addTier(lv, tier.start, tier.end, coef);
-                }
-            });
-        }
-        return Math.floor(enhanceValue);
+    // 2. G2〜G6 (Lv 11〜) の帯加算
+    if (lv > 10) {
+        Object.keys(ENHANCE_GRADE_TIERS).forEach(gradeKey => {
+            const coef = growth[gradeKey] || 0;
+            if (coef > 0) {
+                const tier = ENHANCE_GRADE_TIERS[gradeKey];
+                enhanceValue += addTier(lv, tier.start, tier.end, coef);
+            }
+        });
     }
 
-    // 🌟 A-2. データが未設定（g1: [] 等）の場合はフォールバック：「初期加算値 × レベル」
-    if (typeof enhanceStatMaster !== 'undefined' && enhanceStatMaster[statName]) {
-        const initialAdd = enhanceStatMaster[statName][category] || 0;
-        return initialAdd * lv;
-    }
-
-    return 0;
+    return Math.floor(enhanceValue);
 }
 
 // ==========================================================================
