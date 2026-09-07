@@ -445,36 +445,54 @@ function saveCurrentPlan(side) {
         return;
     }
 
+    // 🌟 ?. を使用して要素が存在しない場合でも安全に値を取得
+    const mode1El = document.getElementById("weaponMode1");
+    const mode3El = document.getElementById("weaponMode3");
+    const awkEl = document.getElementById("awakeningLevel");
+
     let planData = {
-        isOneHand: document.getElementById("weaponMode1").checked,
-        isDualWield: document.getElementById("weaponMode3").checked, // 🌟二刀流状態も安全に保存
-        awakeningLevel: document.getElementById("awakeningLevel").value,
+        isOneHand: mode1El ? mode1El.checked : false,
+        isDualWield: mode3El ? mode3El.checked : false,
+        awakeningLevel: awkEl ? awkEl.value : "0",
         selections: {}
     };
 
     for (let key in slots) {
         const id = slots[key].id;
         planData.selections[id] = {};
+        
         subIndices.forEach(num => {
+            const gradeEl = document.getElementById(`grade_${id}_${num}`);
+            const levelEl = document.getElementById(`level_${id}_${num}`);
+            const statusEl = document.getElementById(`status_${id}_${num}`);
+
             planData.selections[id][num] = {
-                grade: document.getElementById(`grade_${id}_${num}`).value,
-                level: document.getElementById(`level_${id}_${num}`).value,
-                status: document.getElementById(`status_${id}_${num}`).value
+                grade: gradeEl ? gradeEl.value : "",
+                level: levelEl ? levelEl.value : "0",
+                status: statusEl ? statusEl.value : "none"
             };
         });
     }
 
-    let savedPlans = JSON.parse(localStorage.getItem("rox_enchant_plans")) || {};
-    savedPlans[planName] = planData;
-    localStorage.setItem("rox_enchant_plans", JSON.stringify(savedPlans));
-    
-    const topInput = document.getElementById("planNameInput_top");
-    const botInput = document.getElementById("planNameInput");
-    if (topInput) topInput.value = "";
-    if (botInput) botInput.value = "";
+    try {
+        let savedPlans = JSON.parse(localStorage.getItem("rox_enchant_plans")) || {};
+        savedPlans[planName] = planData;
+        localStorage.setItem("rox_enchant_plans", JSON.stringify(savedPlans));
+        
+        const topInput = document.getElementById("planNameInput_top");
+        const botInput = document.getElementById("planNameInput");
+        if (topInput) topInput.value = "";
+        if (botInput) botInput.value = "";
 
-    alert(`プラン「${planName}」を保存しました！`);
-    updateSavedPlansDropdown_all();
+        alert(`プラン「${planName}」を保存しました！`);
+        
+        if (typeof updateSavedPlansDropdown_all === "function") {
+            updateSavedPlansDropdown_all();
+        }
+    } catch (e) {
+        console.error("ローカルストレージの保存に失敗しました:", e);
+        alert("保存処理中にエラーが発生しました。");
+    }
 }
 
 function loadSelectedPlan(side) {
