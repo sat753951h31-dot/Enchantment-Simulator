@@ -32,7 +32,7 @@ const subIndices = [1, 2, 3];
 const levels = ["Lv16", "Lv17", "Lv18", "Lv19", "Lv20"];
 const grades = ["白", "青", "紫", "橙"];
 
-const cityOrder = ["フェイヨン", "ゲフェン", "アルデバラン", "コモド"];
+const cityOrder = ["アルベルタ","フェイヨン", "ゲフェン", "アルデバラン", "コモド"];
 
 let statusCityMap = {};
 
@@ -50,6 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// 🟢 修正版：都市とステータスのマップ生成（重複を許可する構造に変更）
 function buildStatusCityMap() {
     statusCityMap = {};
     for (let city in enchantMaster) {
@@ -58,7 +59,11 @@ function buildStatusCityMap() {
                 statusCityMap[apiKey] = {};
             }
             for (let statusName in enchantMaster[city][apiKey]) {
-                statusCityMap[apiKey][statusName] = city;
+                // 上書きを防ぐため、ステータス名ごとに「どの都市に存在するか」を配列で全て記録します
+                if (!statusCityMap[apiKey][statusName]) {
+                    statusCityMap[apiKey][statusName] = [];
+                }
+                statusCityMap[apiKey][statusName].push(city);
             }
         }
     }
@@ -79,25 +84,33 @@ function initSimulator() {
             if (statusSelect) {
                 statusSelect.innerHTML = "<option value=''>選択してください</option>";
 
-                const availableStatuses = statusCityMap[slot.apiKey];
+                const availableStatuses = statusCityMap[slot.apiKey]; // 例: {"属性耐性": ["アルベルタ", "コモド"]}
                 if (availableStatuses) {
-                    const sortedStatuses = Object.keys(availableStatuses).sort((a, b) => {
-                        const cityA = availableStatuses[a];
-                        const cityB = availableStatuses[b];
-                        const orderA = cityOrder.indexOf(cityA);
-                        const orderB = cityOrder.indexOf(cityB);
-                        
+                    
+                    // ドロップダウンに詰め込むための「都市とステータスのコンビ」を一時リスト化
+                    let comboList = [];
+                    for (let statusName in availableStatuses) {
+                        availableStatuses[statusName].forEach(city => {
+                            comboList.push({ city: city, statusName: statusName });
+                        });
+                    }
+
+                    // 指定された cityOrder（アルベルタ ➔ フェイヨン...）の順にきれいに並び替える
+                    comboList.sort((a, b) => {
+                        const orderA = cityOrder.indexOf(a.city);
+                        const orderB = cityOrder.indexOf(b.city);
                         if (orderA !== orderB) return orderA - orderB;
-                        return a.localeCompare(b);
+                        return a.statusName.localeCompare(b.statusName);
                     });
 
-                    sortedStatuses.forEach(statusName => {
-                        const rawCity = availableStatuses[statusName];
-                        const shortCity = rawCity.substring(0, 3); 
+                    // 並び替えた順にドロップダウン要素を生成して追加
+                    comboList.forEach(item => {
+                        const shortCity = item.city.substring(0, 3); 
 
                         let opt = document.createElement("option");
-                        opt.value = statusName;
-                        opt.textContent = `${shortCity}：${statusName}`;
+                        // 内部処理（calculateAllなど）で「どの都市のステータスか」を正しく判別できるよう、都市名も値に含める
+                        opt.value = `${item.city}_${item.statusName}`;
+                        opt.textContent = `${shortCity}：${item.statusName}`;
                         statusSelect.appendChild(opt);
                     });
                 }
@@ -131,7 +144,6 @@ function toggleWeaponMode(srcSide) {
     }
 
     // 🌟 捕まえた「本物のラジオボタン要素」に対して、ダイレクトに見た目のチェック状態をミラーリング上書き！
-    // これにより、画面内にどれだけIDの重複や残骸があろうとも、ブラウザは確実に本物のポチの色を100%パチッと切り替えてくれます！
     if (r1) r1.checked = isOneHand;
     if (r1_eq) r1_eq.checked = isOneHand;
     if (r3) r3.checked = isDualWield;
@@ -181,21 +193,32 @@ function toggleWeaponMode(srcSide) {
         statusSelect.innerHTML = "<option value=''>選択してください</option>";
 
         const apiKey = isDualWield ? "片手武器" : "サブ武器";
-        const availableStatuses = statusCityMap[apiKey];
+        const availableStatuses = statusCityMap[apiKey]; // 例: {"属性強化": ["アルベルタ", "コモド"]}
 
         if (availableStatuses) {
-            const sortedStatuses = Object.keys(availableStatuses).sort((a, b) => {
-                const cityA = availableStatuses[a];
-                const cityB = availableStatuses[b];
-                return cityOrder.indexOf(cityA) - cityOrder.indexOf(cityB) || a.localeCompare(b);
+            // 🟢 配列構造に対応した、都市名とステータス名の組み合わせリストを一時作成
+            let comboList = [];
+            for (let statusName in availableStatuses) {
+                availableStatuses[statusName].forEach(city => {
+                    comboList.push({ city: city, statusName: statusName });
+                });
+            }
+
+            // 指定された cityOrder（アルベルタ ➔ フェイヨン...）の順に並び替え
+            comboList.sort((a, b) => {
+                const orderA = cityOrder.indexOf(a.city);
+                const orderB = cityOrder.indexOf(b.city);
+                if (orderA !== orderB) return orderA - orderB;
+                return a.statusName.localeCompare(b.statusName);
             });
 
-            sortedStatuses.forEach(statusName => {
-                const rawCity = availableStatuses[statusName];
-                const shortCity = rawCity.substring(0, 3);
+            // 🟢 並び替えた組み合わせをドロップダウンに詰め込む
+            comboList.forEach(item => {
+                const shortCity = item.city.substring(0, 3); 
                 let opt = document.createElement("option");
-                opt.value = statusName;
-                opt.textContent = `${shortCity}：${statusName}`;
+                // initSimulator と同様に都市名プレフィックス付きの value を設定
+                opt.value = `${item.city}_${item.statusName}`;
+                opt.textContent = `${shortCity}：${item.statusName}`;
                 statusSelect.appendChild(opt);
             });
         }
@@ -213,7 +236,6 @@ function toggleWeaponMode(srcSide) {
     if (typeof calculateEquipmentTotalStatus === 'function') {
         calculateEquipmentTotalStatus();
     }
-    
 }
 
 // 装備タブ側から変更が入った際の中継同期関数 (セレクタ連動を最優先させてバトンタッチ)
@@ -269,7 +291,7 @@ function calculateAll() {
 
             const grade = gradeEl.value;
             const level = levelEl.value;
-            const status = statusEl.value;
+            const status = statusEl.value; // 例: "アルベルタ_属性耐性" または旧プランの "属性耐性"
 
             if (!status) {
                 resultEl.textContent = "-";
@@ -281,14 +303,29 @@ function calculateAll() {
                 targetApiKey = "片手武器";
             }
 
-            const city = statusCityMap[targetApiKey]?.[status];
+            // 🟢 都市名と純粋なステータス名に分離（新旧のvalue両方に対応）
+            let city = "";
+            let currentStatusName = status;
+            
+            if (status.includes("_")) {
+                const parts = status.split("_");
+                city = parts[0];
+                currentStatusName = parts[1];
+            } else {
+                // 古いセーブデータや未修正マップ用のフォールバック
+                // 配列（新仕様）か文字列（旧仕様）かを自動判別
+                const mapping = statusCityMap[targetApiKey]?.[status];
+                city = Array.isArray(mapping) ? mapping[0] : mapping;
+            }
+
             if (!city) {
                 resultEl.textContent = "エラー";
                 return;
             }
 
             try {
-                const val = enchantMaster[city][targetApiKey][status][level][grade];
+                // 🟢 分離した正しい名前でマスターデータから値を引っ張ります
+                const val = enchantMaster[city][targetApiKey][currentStatusName][level][grade];
                 if (val !== undefined && val !== "") {
                     const isPercent = val.toString().includes('%');
                     const numValue = parseFloat(val.toString().replace('%', ''));
@@ -298,10 +335,11 @@ function calculateAll() {
 
                     const intValue = Math.round(numValue * 100);
 
-                    if (!totals[status]) {
-                        totals[status] = { intValueSum: 0, isPercent: isPercent };
+                    // 🟢 総合計カード（画面下部など）には「都市名」を除いた名前で合算する
+                    if (!totals[currentStatusName]) {
+                        totals[currentStatusName] = { intValueSum: 0, isPercent: isPercent };
                     }
-                    totals[status].intValueSum += intValue;
+                    totals[currentStatusName].intValueSum += intValue;
 
                 } else {
                     resultEl.textContent = "なし";
@@ -495,6 +533,7 @@ function saveCurrentPlan(side) {
     }
 }
 
+// 🟢 修正版：新旧のステータスvalue形式（都市名プレフィックス付き）に対応したプラン読み込み関数
 function loadSelectedPlan(side) {
     const suffix = side === 'top' ? '_top' : '';
     const selectEl = document.getElementById(`savedPlansSelect${suffix}`);
@@ -528,7 +567,38 @@ function loadSelectedPlan(side) {
         subIndices.forEach(num => {
             const item = plan.selections[id][num];
             if (!item) return;
-            const statusEl = document.getElementById(`status_${id}_${num}`); if (statusEl) statusEl.value = item.status || "";
+
+            const statusEl = document.getElementById(`status_${id}_${num}`);
+            if (statusEl) {
+                const rawSavedStatus = item.status || "";
+
+                // ① 空欄または未選択ならそのまま空にする
+                if (!rawSavedStatus || rawSavedStatus === "none") {
+                    statusEl.value = "";
+                }
+                // ② 新仕様（都市名_ステータス名）で保存されている場合は直接セット
+                else if (rawSavedStatus.includes("_")) {
+                    statusEl.value = rawSavedStatus;
+                }
+                // ③ 旧仕様（ステータス名のみ）で保存されている場合の、鉄壁の自動互換性復元ロジック
+                else {
+                    // 現在のドロップダウンの選択肢（options）をすべてループで探す
+                    let matchedValue = "";
+                    for (let i = 0; i < statusEl.options.length; i++) {
+                        const optVal = statusEl.options[i].value; // 例: "アルベルタ_属性耐性"
+                        
+                        // 「_」の右側が保存されていたステータス名と完全一致するかチェック
+                        if (optVal.includes("_") && optVal.split("_")[1] === rawSavedStatus) {
+                            matchedValue = optVal;
+                            break; // 見つかったらループ終了
+                        }
+                    }
+                    
+                    // 一致する新valueが見つかればそれをセット、なければ元の文字をそのままセット（フォールバック）
+                    statusEl.value = matchedValue ? matchedValue : rawSavedStatus;
+                }
+            }
+
             const lvlEl = document.getElementById(`level_${id}_${num}`); if (lvlEl) lvlEl.value = item.level || "Lv16";
             const grdEl = document.getElementById(`grade_${id}_${num}`); if (grdEl) grdEl.value = item.grade || "白";
         });
@@ -3302,7 +3372,7 @@ function applyMergedTotalToDamageFields(buildType) {
         // 共通
         setInputValue("calc_criRes", getStat("CRIダメージ軽減"));
         setInputValue("calc_monsterRes", getStat("人間形モンスターダメージ軽減"));
-        setInputValue("calc_elementRes", getStat("属性ダメージ軽減"));
+        setInputValue("calc_elementRes", getStat("属性モンスターダメージ軽減"));
         setInputValue("calc_attrRes", getStat("属性耐性"));
         setInputValue("calc_sizeRes", getStat("中型モンスターダメージ軽減"));
         setInputValue("calc_finDmgRes", getStat("最終ダメージ軽減"));
