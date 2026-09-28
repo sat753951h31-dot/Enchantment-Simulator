@@ -746,10 +746,10 @@ function saveDamagePlan() {
     const modeEl = document.querySelector('input[name="calcPositionMode"]:checked');
     let damagePlanData = { positionMode: modeEl ? modeEl.value : "src", inputs: {} };
     const inputIds = [
-        "calc_atk", "calc_pen", "calc_criDmg", "calc_atkPercent", "calc_finAtkPercent", "calc_monsterDamage",
+        "calc_atk", "calc_pen", "calc_criDmg", "calc_atkPercent", "calc_finAtkPercent", "calc_monsterDamage", "calc_elementDamage",
         "calc_attrDmg", "calc_attrFactor", "calc_sizeFactor", "calc_sizeDamage", "calc_dmgUp", "calc_finDmgUp",
         "calc_pvpAtkReal", "calc_pvpAtkPercent", "calc_skillFactor", "calc_skillAdd", "calc_defPercent", "calc_criRes",
-        "calc_defRealPercent", "calc_finAtkRes", "calc_monsterRes", "calc_attrRes", "calc_sizeRes", "calc_finDmgRes",
+        "calc_defRealPercent", "calc_finAtkRes", "calc_monsterRes", "calc_elementRes", "calc_attrRes", "calc_sizeRes", "calc_finDmgRes",
         "calc_pvpDefReal", "calc_pvpDefPercent"
     ];
     inputIds.forEach(id => {
