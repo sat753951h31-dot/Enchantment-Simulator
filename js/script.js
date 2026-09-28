@@ -626,6 +626,7 @@ function calculateDamage() {
     const physicalDamageBonus = getValue("calc_atkPercent"); 
     const finalPhysicalDamageBonus = getValue("calc_finAtkPercent"); 
     const raceBonus = getValue("calc_monsterDamage"); 
+    const elementDamageBonus = getValue("calc_elementDamage"); 
     const sizeEnhance = getValue("calc_sizeDamage"); 
     const finalDamageBonus = getValue("calc_finDmgUp");     
     const elementBonus = getValue("calc_attrDmg");       
@@ -642,6 +643,7 @@ function calculateDamage() {
     const targetPhysicalDamageReduction = getValue("calc_defRealPercent"); 
     const targetFinalPhysicalDamageReduction = getValue("calc_finAtkRes");    
     const targetRaceReduction = getValue("calc_monsterRes"); 
+    const targetElementReduction = getValue("calc_elementRes"); 
     const targetSizeReduction = getValue("calc_sizeRes");       
     const targetFinalDamageReduction = getValue("calc_finDmgRes"); 
     const targetElementResistance = getValue("calc_attrRes");       
@@ -660,6 +662,9 @@ function calculateDamage() {
     let calcRaceBonus = raceBonus - targetRaceReduction;
     if (calcRaceBonus < -80) { calcRaceBonus = -80; }
 
+    let calcElementBonus = elementDamageBonus - targetElementReduction;
+    if (calcElementBonus < -80) { calcElementBonus = -80; }
+
     let calcElementEnhance = elementCounter + elementBonus - targetElementResistance;
     if (calcElementEnhance < 20) { calcElementEnhance = 20; }
 
@@ -675,6 +680,7 @@ function calculateDamage() {
     let physicalDamageMultiplier = (1 + calcFinalPhysicalDamageBonus / 100) * 
                                    (calcElementEnhance / 100) * 
                                    (1 + calcRaceBonus / 100) * 
+                                   (1 + calcElementBonus / 100) * 
                                    (1 + calcFinalDamageBonus / 100) * 
                                    (calcSizeEnhance / 100) * 
                                    (1 + skillDamageBonus / 100);
@@ -3271,7 +3277,8 @@ function applyMergedTotalToDamageFields(buildType) {
         setInputValue("calc_monsterDamage", getStat("人間形モンスターダメージ増加"));
         setInputValue("calc_attrDmg", getStat("属性強化"));
         setInputValue("calc_sizeDamage", getStat("中型モンスターダメージ増加"));
-        setInputValue("calc_dmgUp", getStat("属性モンスターダメージ増加"));
+        setInputValue("calc_elementDamage", getStat("属性モンスターダメージ増加"));
+        setInputValue("calc_dmgUp", getStat("ダメージアップ"));
         setInputValue("calc_finDmgUp", getStat("最終ダメージ増加"));
     }
 
@@ -3295,6 +3302,7 @@ function applyMergedTotalToDamageFields(buildType) {
         // 共通
         setInputValue("calc_criRes", getStat("CRIダメージ軽減"));
         setInputValue("calc_monsterRes", getStat("人間形モンスターダメージ軽減"));
+        setInputValue("calc_elementRes", getStat("属性ダメージ軽減"));
         setInputValue("calc_attrRes", getStat("属性耐性"));
         setInputValue("calc_sizeRes", getStat("中型モンスターダメージ軽減"));
         setInputValue("calc_finDmgRes", getStat("最終ダメージ軽減"));
@@ -3330,6 +3338,7 @@ function clearDamageFieldsBySelection() {
         calc_atkPercent: 0,
         calc_finAtkPercent: 0,
         calc_monsterDamage: 0,
+        calc_elementDamage: 0,
         calc_attrDmg: 0,
         calc_sizeDamage: 0,
         calc_dmgUp: 0,
@@ -3345,6 +3354,7 @@ function clearDamageFieldsBySelection() {
         calc_defRealPercent: 0,
         calc_finAtkRes: 0,
         calc_monsterRes: 0,
+        calc_elementRes: 0,
         calc_attrRes: 0,
         calc_sizeRes: 0,
         calc_finDmgRes: 0,

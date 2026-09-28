@@ -774,6 +774,11 @@
                 </div>
 
                 <div class="fixed-input-row">
+                    <label for="calc_elementDamage">属性ダメージ増加 (%):</label>
+                    <input type="number" id="calc_elementDamage" value="0" oninput="calculateDamage()">
+                </div>
+
+                <div class="fixed-input-row">
                     <label for="calc_attrDmg">属性強化 (%):</label>
                     <input type="number" id="calc_attrDmg" value="0" oninput="calculateDamage()">
                 </div>
@@ -854,6 +859,11 @@
                 <div class="fixed-input-row">
                     <label for="calc_monsterRes">種族被ダメージ軽減 (%):</label>
                     <input type="number" id="calc_monsterRes" value="0" oninput="calculateDamage()">
+                </div>
+                
+                <div class="fixed-input-row">
+                    <label for="calc_elementRes">属性被ダメージ軽減 (%):</label>
+                    <input type="number" id="calc_elementRes" value="0" oninput="calculateDamage()">
                 </div>
                 
                 <div class="fixed-input-row">
