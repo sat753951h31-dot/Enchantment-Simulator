@@ -3652,6 +3652,7 @@ function importAllPlansFromTextarea() {
     }
 
     try {
+        // 🌟 1. 貼り付けられたJSONデータを最優先でパースして安全に変数のヘ避難
         const sourceJsonObject = JSON.parse(jsonText);
         
         let addedCount = 0;
@@ -3666,23 +3667,33 @@ function importAllPlansFromTextarea() {
         ROX_STORAGE_KEYS.forEach(key => {
             if (!allowedKeys.includes(key) || !sourceJsonObject[key]) return;
 
-            const newDataBlock = sourceJsonObject[key];
+            const newDataBlock = sourceJsonObject[key]; // JSON内の特定のカテゴリ
+            
+            // 画面上に配置されているチェックボックス（幽霊キャッシュ化している可能性がある要素）を取得
             const subChecks = document.querySelectorAll(`.io-sub-check-${key}`);
             
+            // 🌟 2. 【核心の修正】インポート対象のプラン名を決める際、画面の状態に100%依存するのをやめます。
+            // JSON内にある各プラン名について、明示的に「画面上でチェックが『外されていない』」もの、
+            // または「リストが空の状態（全選択）」のものをすべて救い上げます。
             let targetPlanNamesToImport = [];
             
             for (let rawPlanName in newDataBlock) {
-                let isChecked = false;
+                let isExplicitlyUnchecked = false;
                 
                 subChecks.forEach(cb => {
                     const cbPlanName = cb.getAttribute("data-plan");
+                    // エクスポート/インポート時の名前の表記ブレ（エスケープ）を両方考慮して厳密にマッチング
                     if (cbPlanName === rawPlanName || decodeURIComponent(cbPlanName) === rawPlanName) {
-                        if (cb.checked) isChecked = true;
+                        // 🌟 明示的にユーザーが手動でチェックを「外した」場合のみ記録
+                        if (!cb.checked) {
+                            isExplicitlyUnchecked = true;
+                        }
                     }
                 });
                 
-                // 子リストがない状態、またはチェックがONのプランをインポート対象に確定
-                if (subChecks.length === 0 || isChecked) {
+                // チェックが手動で外されていないプラン、または初期状態（subChecksが空）のものは
+                // 連続実行や削除後であっても、100%インポート対象として安全に確定させます！
+                if (!isExplicitlyUnchecked) {
                     targetPlanNamesToImport.push(rawPlanName);
                 }
             }
@@ -3692,7 +3703,7 @@ function importAllPlansFromTextarea() {
                 targetPlanNamesToImport.forEach(rawName => {
                     if (newDataBlock[rawName]) {
                         filteredBlock[rawName] = newDataBlock[rawName];
-                        replacedCount++; // 👑 入れ替え成功数を正確にカウント
+                        replacedCount++;
                     }
                 });
                 localStorage.setItem(key, JSON.stringify(filteredBlock));
@@ -3704,14 +3715,15 @@ function importAllPlansFromTextarea() {
                     if (!newDataBlock[rawName]) return;
                     
                     let targetPlanName = rawName;
+                    
+                    // 重複ガード：すでにストレージにある場合は「_コピー」を自動付与
+                    // 🌟 プランを削除した後は、既存データから名前が消えているため、
+                    // コピーにならずに元のオリジナル名（綺麗な名前）のまま一発で再登録されます！
                     while (existingDataBlock[targetPlanName]) {
                         targetPlanName = targetPlanName + "_コピー";
                     }
 
-                    // 実際に保存処理に移行
                     existingDataBlock[targetPlanName] = newDataBlock[rawName];
-                    
-                    // 👑【核心の修正】画面ではなく、実際にLocalStorageの連連想配列にプランが追加された瞬間に、確実に「1件」として加算します！
                     addedCount++; 
                 });
 
@@ -3719,7 +3731,7 @@ function importAllPlansFromTextarea() {
             }
         });
 
-        // 画面上のすべてのプルダウンメニューを一斉リフレッシュ
+        // 💡 画面上のすべてのプルダウンメニューを一斉リフレッシュ
         if (typeof updateSavedPlansDropdown_all === 'function') updateSavedPlansDropdown_all();
         if (typeof updateSavedEquipmentPlansDropdown === 'function') updateSavedEquipmentPlansDropdown();
         if (typeof updateSavedOtherPlansDropdown === 'function') updateSavedOtherPlansDropdown();
@@ -3730,14 +3742,14 @@ function importAllPlansFromTextarea() {
         if (typeof calculateEquipmentTotalStatus === 'function') calculateEquipmentTotalStatus();
         if (typeof calculateOtherTotalStatus === 'function') calculateOtherTotalStatus();
 
-        // 画面カテゴリのチェック状態の復元と、チェックリストの完全同期
+        // 🌟 3. インポート完了直後に、親カテゴリのチェックをすべてONにし、
+        // 古くなった画面上の子チェックボックス（DOMキャッシュ）を1回完全にリセット（最新化）します！
         ROX_STORAGE_KEYS.forEach(key => {
             const el = document.getElementById(ROX_KEY_LABELS[key].checkId);
             if (el) el.checked = true;
         });
-        buildDynamicPlanSelectionList(true);
+        buildDynamicPlanSelectionList(true); // 自分の最新のデータ状態でチェックリストを上書き・クレンジング
 
-        // 🌟 正確になった数値をもとにメッセージを描画
         if (importMode === "replace") {
             showIOMessage(`🎉 選んだプランのみを抽出し、一括入れ替えを完了しました。(計 ${replacedCount} 個のプランを適用)`, "success");
         } else {
