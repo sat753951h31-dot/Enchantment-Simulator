@@ -569,7 +569,7 @@ input[type="radio"] {
 }
 
 .tab-pane.active-pane {
-    display: block;
+    display: block !important;
     animation: fadeInTab 0.25s ease-out;
 }
 
@@ -1343,4 +1343,215 @@ input[type="radio"] {
     margin: 12px 0 6px 4px;
     border-left: 4px solid #3182ce;
     padding-left: 8px;
+}
+
+
+/* ==========================================================================
+   📋 プランデータの入出力（JSON形式）タブ専用スタイル
+   ========================================================================== */
+
+/* タブコンテンツ全体の余白 */
+.plan-io-container {
+    padding: 20px;
+}
+
+/* 説明テキストの補助色 */
+.plan-io-help-text {
+    font-size: 0.9em;
+    color: #666666;
+    margin-bottom: 15px;
+}
+
+/* JSONテキストエリア：開発者ライクな等幅フォントとスマートな背景 */
+.plan-io-textarea {
+    width: 100%;
+    font-family: monospace;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background-color: #f7fafc;
+    line-height: 1.4;
+    resize: vertical; /* 縦方向のみリサイズ可能に */
+}
+
+/* ボタンを並べるコンテナ */
+.plan-io-btn-group {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+/* ベースとなるボタンスタイル */
+.plan-io-btn {
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+/* 出力（青ボタン） */
+.plan-io-btn-export {
+    background-color: #3182ce;
+}
+.plan-io-btn-export:hover {
+    background-color: #2b6cb0;
+}
+
+/* 入力（緑ボタン） */
+.plan-io-btn-import {
+    background-color: #38a169;
+}
+.plan-io-btn-import:hover {
+    background-color: #2f855a;
+}
+
+/* 結果・エラー通知メッセージの共通枠 */
+.plan-io-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    white-space: pre-line;
+}
+
+/* 各メッセージ状態 */
+.plan-io-message-success {
+    color: #2f855a;
+    background-color: #f0fff4;
+    border: 1px solid #2f855a;
+}
+
+.plan-io-message-warning {
+    color: #dd6b20;
+    background-color: #fffaf0;
+    border: 1px solid #dd6b20;
+}
+
+.plan-io-message-error {
+    color: #e53e3e;
+    background-color: #fff5f5;
+    border: 1px solid #e53e3e;
+}
+
+/* チェックボックス・選択オプション用のコンテナ */
+.plan-io-options-group {
+    background-color: #f7fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.plan-io-options-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: #2d3748;
+}
+
+.plan-io-checkbox-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.plan-io-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+/* インポート方法選択用の区切り線 */
+.plan-io-divider {
+    margin: 12px 0;
+    border: 0;
+    border-top: 1px dashed #cbd5e0;
+}
+
+/* 動的プランリストのコンテナ枠 */
+.plan-io-dynamic-section {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+
+.plan-io-section-subtitle {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 2px;
+}
+
+/* プラン名チェックボックスの2段・3段マルチカラム並び */
+.plan-io-sub-checkbox-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.plan-io-label-sub {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    color: #4a5568;
+}
+
+/* 全選択・全解除リンクのスタイル */
+.plan-io-bulk-link {
+    font-size: 0.75em;
+    color: #3182ce;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 8px;
+}
+.plan-io-bulk-link:hover {
+    color: #2b6cb0;
+}
+
+/* ユーティリティボタン専用のボタングループ */
+.plan-io-util-group {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end; /* テキストエリアの右下に配置 */
+}
+
+/* ユーティリティボタンのベース（少し小さめでスマートに） */
+.plan-io-btn-util {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #4a5568;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+/* コピーボタンのホバー */
+.plan-io-btn-copy:hover {
+    background-color: #edf2f7;
+    color: #2b6cb0;
+    border-color: #a0aec0;
+}
+
+/* クリアボタンのホバー */
+.plan-io-btn-clear:hover {
+    background-color: #fff5f5;
+    color: #e53e3e;
+    border-color: #feb2b2;
 }

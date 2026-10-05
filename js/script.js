@@ -398,7 +398,8 @@ function switchTab(tabName) {
         'enchant':   { btnId: "tabBtnEnchant",   paneId: "tabContentEnchant" },
         'damage':    { btnId: "tabBtnDamage",    paneId: "tabContentDamage" },
         'equipment': { btnId: "tabBtnEquipment", paneId: "tabContentEquipment" },
-        'etc':       { btnId: "tabBtnEtc",       paneId: "tabContentEtc" }
+        'etc':       { btnId: "tabBtnEtc",       paneId: "tabContentEtc" },
+        'planIO':    { btnId: "tabBtnPlanIO",    paneId: "tabContentPlanIO" }
     };
 
     // 💡 2. すべてのタブ要素をループで回し、一度完全に「真っ新（非活性）」にする
@@ -434,11 +435,11 @@ function switchTab(tabName) {
             calculateOtherTotalStatus();
         }
     } else if (tabName === 'damage') {
-        // 🌟【バグ修正完了】エラーの元だった不整合な if (targetPane) の重複行を完全撤廃！
-        // 👑【大トリのドッキング】ダメージ計算機タブが開かれた瞬間に、3大タブの合計を裏側で全自動合算します
         if (typeof calculateDamageTabTotalMerge === 'function') {
             calculateDamageTabTotalMerge();
         }
+    } else if (tabName === 'planIO') {
+        exportAllPlansToTextarea();
     }
 }
 
@@ -902,6 +903,20 @@ switchTab = function(tabName) {
         } else {
             btnEquipment.classList.remove("active-tab");
             contentEquipment.classList.remove("active-pane");
+        }
+    }
+    // 「プランの入力・出力」タブの表示・非表示コントロール
+    const btnPlanIO = document.getElementById("tabBtnPlanIO");
+    const contentPlanIO = document.getElementById("tabContentPlanIO");
+    if (btnPlanIO && contentPlanIO) {
+        if (tabName === 'planIO') {
+            btnPlanIO.classList.add("active-tab");
+            contentPlanIO.classList.add("active-pane");
+            // 🌟 タブを開いた時にまず画面（LocalStorage）をスキャンしてプランリストを構築し、その後出力する
+            buildDynamicPlanSelectionList(true); 
+        } else {
+            btnPlanIO.classList.remove("active-tab");
+            contentPlanIO.classList.remove("active-pane"); /* 他のタブが開かれたらきれいに非表示にする */
         }
     }
 };
@@ -3443,4 +3458,408 @@ function clearDamageFieldsBySelection() {
     if (typeof calculateDamage === 'function') {
         calculateDamage();
     }
+}
+
+// シミュレーターが使用している全LocalStorageキーの定義
+const ROX_STORAGE_KEYS = [
+    "rox_enchant_plans",
+    "rox_equip_plans",
+    "rox_other_plans",
+    "rox_damage_plans"
+];
+
+// 各カテゴリ（LocalStorageキー）に対応する日本語表示用ラベル
+const ROX_KEY_LABELS = {
+    "rox_enchant_plans": { name: "💎 エンチャント", checkId: "io-check-enchant" },
+    "rox_equip_plans": { name: "🛡️ 装備・カード", checkId: "io-check-equip" },
+    "rox_other_plans": { name: "☸ その他設定", checkId: "io-check-other" },
+    "rox_damage_plans": { name: "⚔ ダメージ計算条件", checkId: "io-check-damage" }
+};
+
+/**
+ * 🌟 画面（LocalStorage）または貼り付けられたJSONから個別のプラン名リストを自動生成するコア関数
+ * @param {boolean} fromLocalStorage - 真なら自分のデータをスキャン、偽ならtextareaの中身をスキャン
+ */
+function buildDynamicPlanSelectionList(fromLocalStorage = true) {
+    const container = document.getElementById("plan-io-dynamic-plans-panel");
+    if (!container) return;
+
+    let sourceData = {};
+
+    if (fromLocalStorage) {
+        // ローカルストレージから最新の全データを引っ張る
+        ROX_STORAGE_KEYS.forEach(key => {
+            sourceData[key] = JSON.parse(localStorage.getItem(key)) || {};
+        });
+    } else {
+        // テキストエリアに貼り付けられたテキストをスキャン
+        const text = document.getElementById("plan-json-textarea")?.value.trim();
+        if (!text) {
+            container.innerHTML = "";
+            return;
+        }
+        try {
+            const parsed = JSON.parse(text);
+            ROX_STORAGE_KEYS.forEach(key => {
+                sourceData[key] = parsed[key] || {};
+            });
+        } catch (e) {
+            // 不完全なJSONの場合はリスト生成をスキップ
+            return;
+        }
+    }
+
+    let html = "";
+    let hasAnyPlan = false;
+
+    // 各カテゴリごとに保存されているプランをループ処理
+    for (let key in sourceData) {
+        const plans = sourceData[key];
+        const planNames = Object.keys(plans);
+        if (planNames.length === 0) continue;
+
+        hasAnyPlan = true;
+        const config = ROX_KEY_LABELS[key];
+
+        html += `
+            <div class="plan-io-dynamic-section" id="dynamic-section-${key}">
+                <div class="plan-io-section-subtitle">
+                    ${config.name} の保存済みプラン 
+                    <span class="plan-io-bulk-link" onclick="toggleSubPlanChecks('${key}', true)">全選択</span>
+                    <span class="plan-io-bulk-link" onclick="toggleSubPlanChecks('${key}', false)">全解除</span>
+                </div>
+                <div class="plan-io-sub-checkbox-list">
+        `;
+
+        planNames.forEach((name, index) => {
+            // 特殊文字や空白によるHTML崩れを防ぐため、安全なエスケープを簡易適用
+            const safeName = name.replace(/"/g, '&quot;');
+            html += `
+                <label class="plan-io-label-sub">
+                    <input type="checkbox" class="io-sub-check-${key}" data-key="${key}" data-plan="${safeName}" checked onchange="exportAllPlansToTextarea()"> ${name}
+                </label>
+            `;
+        });
+
+        html += `</div></div>`;
+    }
+
+    container.innerHTML = html ? `<div style="font-size:0.9em; font-weight:bold; margin-bottom:5px; color:#2d3748;">📌 個別プランの選択フィルター:</div>` + html : "";
+    
+    if (fromLocalStorage) {
+        exportAllPlansToTextarea(false);
+    }
+}
+
+/**
+ * 🌟 テキストエリアへの貼り付けを検知した際の自動リスト展開トリガー
+ */
+function handleTextareaInput() {
+    buildDynamicPlanSelectionList(false); // 貼り付けられたJSONをベースにプランを展開
+}
+
+/**
+ * 大元カテゴリのチェックが手動で変更された時のトリガー
+ */
+function handleCategoryCheckChange() {
+    const container = document.getElementById("plan-io-dynamic-plans-panel");
+    const textarea = document.getElementById('plan-json-textarea');
+
+    if (!container || container.innerHTML === "" || (textarea && textarea.value.trim() === "")) {
+        console.log("ROX_IO_LOG: テキストエリアが空のため、自分の保存済みプランリストを自動再構築します。");
+        buildDynamicPlanSelectionList(true); // 自分のデータでチェックリストを最生成
+    }
+
+    // 各子プランセクションの表示・非表示の連動処理
+    ROX_STORAGE_KEYS.forEach(key => {
+        const isChecked = document.getElementById(ROX_KEY_LABELS[key].checkId)?.checked;
+        const section = document.getElementById(`dynamic-section-${key}`);
+        if (section) {
+            section.style.display = isChecked ? "block" : "none";
+        }
+    });
+    
+    // 強制描画フラグ(true)を立てて、最新状態をテキストエリアへ書き出す
+    exportAllPlansToTextarea(true);
+}
+
+/**
+ * 🌟【完全対策版】個別にチェックされたプラン名だけを厳選してJSON出力する
+ */
+function exportAllPlansToTextarea(isForceRender = false) {
+    const textarea = document.getElementById('plan-json-textarea');
+    const msgEl = document.getElementById('io-message');
+    if (!textarea) return;
+
+    let exportMasterObject = {};
+    let hasData = false;
+
+    ROX_STORAGE_KEYS.forEach(key => {
+        const isCategoryAllowed = document.getElementById(ROX_KEY_LABELS[key].checkId)?.checked;
+        if (!isCategoryAllowed) return;
+
+        const subChecks = document.querySelectorAll(`.io-sub-check-${key}:checked`);
+        if (subChecks.length === 0) return;
+
+        const fullDataBlock = JSON.parse(localStorage.getItem(key)) || {};
+        
+        let categoryObject = {};
+        let hasSubData = false;
+
+        subChecks.forEach(cb => {
+            const planName = cb.getAttribute("data-plan");
+            if (fullDataBlock[planName]) {
+                categoryObject[planName] = fullDataBlock[planName];
+                hasSubData = true;
+                hasData = true;
+            }
+        });
+
+        if (hasSubData) {
+            exportMasterObject[key] = categoryObject;
+        }
+    });
+
+    // 🌟 判定ロジックの適正化：
+    // 手動操作時、またはチェックが入っている有効なプランデータが組み立てられた場合のみテキストエリアを更新
+    if (hasData || isForceRender) {
+        textarea.value = hasData ? JSON.stringify(exportMasterObject, null, 2) : "";
+    }
+
+    if (isForceRender === true && msgEl && msgEl.style.display !== 'none') {
+        if (hasData) {
+            showIOMessage("✅ 選択されたプランをJSONとして出力しました。テキストをコピーして保管してください。", "success");
+        } else {
+            showIOMessage("⚠️ 選択されたプランまたはデータが存在しないため、空欄を出力しました。", "warning");
+        }
+    }
+}
+
+/**
+ * 🌟【修正版】貼り付けられた他人のJSONから、チェックされたプランを確実に「追加」または「入れ替え」するインポート関数
+ */
+function importAllPlansFromTextarea() {
+    const textarea = document.getElementById('plan-json-textarea');
+    if (!textarea) return;
+
+    const jsonText = textarea.value.trim();
+    if (!jsonText) {
+        showIOMessage("❌ テキストエリアが空です。JSONデータを貼り付けてください。", "error");
+        return;
+    }
+
+    const importMode = document.querySelector('input[name="importMode"]:checked')?.value || "add";
+
+    if (importMode === "replace") {
+        if (!confirm("⚠️【警告：入れ替え】\n選択したプラン『だけ』を残し、シミュレーター内の他のすべてのデータは完全に消去されます。よろしいですか？")) return;
+    } else {
+        if (!confirm("✨【プランの個別追加】\n選択したプランを、現在のシミュレーターのリストへ安全に追加マージします。よろしいですか？")) return;
+    }
+
+    try {
+        // 🌟 修正：消去処理が入る前に、貼り付けられたJSONの「生の全データ」を最優先で変数に安全に隔離します
+        const sourceJsonObject = JSON.parse(jsonText);
+        
+        let addedCount = 0;
+        let replacedCount = 0;
+
+        ROX_STORAGE_KEYS.forEach(key => {
+            // 大元カテゴリにチェックが入っていない、またはJSON内にそのカテゴリが存在しない場合はスキップ
+            if (!document.getElementById(ROX_KEY_LABELS[key].checkId)?.checked || !sourceJsonObject[key]) return;
+
+            const newDataBlock = sourceJsonObject[key];
+            
+            // 画面の個別プランチェックボックス（現在チェックされているもの）を取得
+            const subChecks = document.querySelectorAll(`.io-sub-check-${key}:checked`);
+            
+            // 🌟 修正：チェックボックスが「他人の貼り付けデータから自動生成されたもの」であるため、
+            // 隔離しておいた raw データブロックから直接プランを探してマージします
+            if (importMode === "replace") {
+                // 【入れ替えモード】
+                let filteredBlock = {};
+                subChecks.forEach(cb => {
+                    const planName = cb.getAttribute("data-plan");
+                    if (newDataBlock[planName]) {
+                        filteredBlock[planName] = newDataBlock[planName];
+                        replacedCount++;
+                    }
+                });
+                localStorage.setItem(key, JSON.stringify(filteredBlock));
+            } 
+            else {
+                // 【追加（マージ）モード】
+                let existingDataBlock = JSON.parse(localStorage.getItem(key)) || {};
+
+                subChecks.forEach(cb => {
+                    const planName = cb.getAttribute("data-plan");
+                    if (!newDataBlock[planName]) return; // JSON内にそのプランがなければスキップ
+                    
+                    let targetPlanName = planName;
+                    
+                    // 🛡️ 現在のストレージデータと名前が重複する場合、自動で「_コピー」を付与してリネーム
+                    while (existingDataBlock[targetPlanName]) {
+                        targetPlanName = targetPlanName + "_コピー";
+                    }
+
+                    // 既存リストの末尾にプランをドッキング
+                    existingDataBlock[targetPlanName] = newDataBlock[planName];
+                    addedCount++;
+                });
+
+                // マージ完了したデータをローカルストレージへ保存
+                localStorage.setItem(key, JSON.stringify(existingDataBlock));
+            }
+        });
+
+        // 💡 画面上のすべてのセレクトボックス（プルダウンメニュー）を最新にリフレッシュ
+        if (typeof updateSavedPlansDropdown_all === 'function') updateSavedPlansDropdown_all();
+        if (typeof updateSavedEquipmentPlansDropdown === 'function') updateSavedEquipmentPlansDropdown();
+        if (typeof updateSavedOtherPlansDropdown === 'function') updateSavedOtherPlansDropdown();
+        if (typeof updateSavedDamagePlansDropdown === 'function') updateSavedDamagePlansDropdown();
+        
+        // リアルタイム集計合計の再計算
+        if (typeof calculateAll === 'function') calculateAll();
+        if (typeof calculateEquipmentTotalStatus === 'function') calculateEquipmentTotalStatus();
+        if (typeof calculateOtherTotalStatus === 'function') calculateOtherTotalStatus();
+
+        // 成功後、自分の最新セーブデータ（LocalStorage）の状態でチェックリストの見た目を再構築
+        buildDynamicPlanSelectionList(true);
+
+        if (importMode === "replace") {
+            showIOMessage(`🎉 選んだプランのみを抽出し、一括入れ替えを完了しました。(計 ${replacedCount} 個)`, "success");
+        } else {
+            showIOMessage(`🎉 選択した ${addedCount} 個のプランを現在のリストに安全に追加しました！\n(名前が同じプランは自動で「_コピー」にリネームされました)`, "success");
+        }
+
+    } catch (error) {
+        showIOMessage(`❌ インポートに失敗しました。JSONデータの記述に問題があります。\nエラー: ${error.message}`, "error");
+    }
+}
+
+/**
+ * 🌟【修正版】補助リンク用：大元カテゴリの一括全選択・全解除
+ */
+function toggleAllCategoryChecks(isChecked) {
+    ROX_STORAGE_KEYS.forEach(key => {
+        const el = document.getElementById(ROX_KEY_LABELS[key].checkId);
+        if (el) el.checked = isChecked;
+        
+        // 🌟 親だけでなく、その中にある子プランのチェックボックスも連動してすべて同時に揃えます
+        const subChecks = document.querySelectorAll(`.io-sub-check-${key}`);
+        subChecks.forEach(cb => cb.checked = isChecked);
+        
+        // 子プランセクション自体の表示・非表示を切り替え
+        const section = document.getElementById(`dynamic-section-${key}`);
+        if (section) {
+            section.style.setProperty("display", isChecked ? "block" : "none", isChecked ? "important" : "");
+        }
+    });
+    
+    // 👑 強制描画フラグをONにしてテキストエリアを即座に同期
+    exportAllPlansToTextarea(true);
+}
+
+/**
+ * 🌟【修正版】補助リンク用：子プラン名の一括全選択・全解除
+ */
+function toggleSubPlanChecks(key, isChecked) {
+    const subChecks = document.querySelectorAll(`.io-sub-check-${key}`);
+    subChecks.forEach(cb => cb.checked = isChecked);
+    
+    // 🌟 子プランが1つでも選択されたなら、親カテゴリのチェックも自動でONにする親切設計
+    const parentCategoryCheck = document.getElementById(ROX_KEY_LABELS[key].checkId);
+    if (parentCategoryCheck && isChecked) {
+        parentCategoryCheck.checked = true;
+    }
+    
+    // 👑 強制描画フラグをONにしてテキストエリア側へ即座に完全反映
+    exportAllPlansToTextarea(true);
+}
+
+/**
+ * 簡易メッセージ通知ヘルパー関数（CSSクラス切り替え・完全直書き排除版）
+ */
+function showIOMessage(text, statusType) {
+    const msgEl = document.getElementById('io-message');
+    if (!msgEl) return;
+    
+    // 一度すべてのステータスクラスをクリア
+    msgEl.classList.remove('plan-io-message-success', 'plan-io-message-warning', 'plan-io-message-error');
+    
+    // メッセージを設定して表示
+    msgEl.textContent = text;
+    msgEl.style.display = 'block';
+
+    // 引数に応じて対応するCSSクラスを付与
+    if (statusType === 'success') {
+        msgEl.classList.add('plan-io-message-success');
+    } else if (statusType === 'warning') {
+        msgEl.classList.add('plan-io-message-warning');
+    } else if (statusType === 'error') {
+        msgEl.classList.add('plan-io-message-error');
+    }
+}
+
+/**
+ * 🌟【新設】テキストエリアの内容をワンタップでクリップボードに一括コピーする
+ */
+function copyPlanJsonToClipboard() {
+    const textarea = document.getElementById('plan-json-textarea');
+    if (!textarea || !textarea.value.trim()) {
+        showIOMessage("❌ コピーするデータがありません。先にプランを出力してください。", "error");
+        return;
+    }
+
+    // モダンブラウザ向けのクリップボードAPI
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textarea.value)
+            .then(() => {
+                showIOMessage("📋 クリップボードにJSONデータをコピーしました！そのままメモ帳などに貼り付けて保存してください。", "success");
+            })
+            .catch(err => {
+                console.error("コピー失敗:", err);
+                fallbackCopyText(textarea);
+            });
+    } else {
+        // 古いブラウザや非HTTPS環境向けのフォールバック処理
+        fallbackCopyText(textarea);
+    }
+}
+
+/**
+ * コピー機能のフォールバック
+ */
+function fallbackCopyText(textarea) {
+    try {
+        textarea.select();
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showIOMessage("📋 クリップボードにJSONデータをコピーしました！(フォールバック)", "success");
+        } else {
+            showIOMessage("❌ 自動コピーに失敗しました。お手数ですがテキストエリアを全選択してコピペしてください。", "error");
+        }
+    } catch (err) {
+        showIOMessage("❌ コピー処理中にエラーが発生しました。", "error");
+    }
+}
+
+/**
+ * 🌟【修正版】テキストエリアをクリアし、他人のデータを貼り付けやすくする「自由入力モード」にする
+ */
+function clearPlanJsonTextarea() {
+    const textarea = document.getElementById('plan-json-textarea');
+    const container = document.getElementById("plan-io-dynamic-plans-panel");
+    if (!textarea) return;
+
+    textarea.value = "";
+    if (container) container.innerHTML = "";
+
+    // 🌟 修正：クリアボタンを押した後は、大元カテゴリのチェックボックスも一度すべて解除状態にします
+    ROX_STORAGE_KEYS.forEach(key => {
+        const el = document.getElementById(ROX_KEY_LABELS[key].checkId);
+        if (el) el.checked = false;
+    });
+
+    showIOMessage("🧹 テキストエリアと選択フィルターをクリアしました。他人のJSONデータを貼り付けるか、上のカテゴリにチェックを入れて再度出力してください。", "warning");
+    textarea.focus();
 }

@@ -17,6 +17,7 @@
         <button id="tabBtnEquipment" class="tab-btn" onclick="switchTab('equipment')">🛡️ 装備シミュレータ</button>
         <button id="tabBtnEtc" class="tab-btn" onclick="switchTab('etc')">☸️ その他設定</button>
         <button id="tabBtnDamage" class="tab-btn" onclick="switchTab('damage')">⚔️ ダメージ計算機</button>
+        <button id="tabBtnPlanIO" class="tab-btn" onclick="switchTab('planIO')">プランの入力・出力</button>
     </div>
     
     <div id="tabContentEnchant" class="tab-pane active-pane">
@@ -924,6 +925,91 @@
     </div>
 
     </div>
+    <!-- プランの入力・出力タブ -->
+    <div id="tabContentPlanIO" class="tab-pane">
+        <div class="plan-io-container">
+            <h3>📋 全プランデータの入出力 (JSON形式)</h3>
+            <p class="plan-io-help-text">
+                シミュレーター内のセーブデータをJSON形式形式で書き出したり、貼り付けて復元・追加ができます。
+            </p>
+
+            <!-- オプション選択パネル -->
+            <div class="plan-io-options-group">
+                <!-- A. 対象カテゴリの選択 -->
+                <div class="plan-io-options-title">
+                    ⚙️ 対象にするデータ・プランを選択：
+                    <span class="plan-io-bulk-link" onclick="toggleAllCategoryChecks(true)">すべて選択</span>
+                    <span class="plan-io-bulk-link" onclick="toggleAllCategoryChecks(false)">すべて解除</span>
+                </div>
+                <div class="plan-io-checkbox-list">
+                    <label class="plan-io-label">
+                        <input type="checkbox" id="io-check-enchant" checked onchange="handleCategoryCheckChange()"> 💎 エンチャント
+                    </label>
+                    <label class="plan-io-label">
+                        <input type="checkbox" id="io-check-equip" checked onchange="handleCategoryCheckChange()"> 🛡️ 装備・カード
+                    </label>
+                    <label class="plan-io-label">
+                        <input type="checkbox" id="io-check-other" checked onchange="handleCategoryCheckChange()"> ☸ その他設定
+                    </label>
+                    <label class="plan-io-label">
+                        <input type="checkbox" id="io-check-damage" checked onchange="handleCategoryCheckChange()"> ⚔ ダメージ計算条件
+                    </label>
+                </div>
+
+                <!-- 🌟 ここに各プラン名がチェックボックス形式で自動生成されます -->
+                <div id="plan-io-dynamic-plans-panel" style="margin-top: 12px;"></div>
+
+                <div class="plan-io-divider"></div>
+
+                <!-- B. インポート方法の選択 -->
+                <div class="plan-io-options-title">📥 インポート方法（貼り付け時）：</div>
+                <div class="plan-io-checkbox-list">
+                    <label class="plan-io-label">
+                        <input type="radio" name="importMode" value="add" checked> ✨ 現在のリストに「追加」する（名前重複時はコピーを作成）
+                    </label>
+                    <label class="plan-io-label">
+                        <input type="radio" name="importMode" value="replace"> ⚠️ 現在のデータをすべて消して「入れ替え」
+                    </label>
+                </div>
+            </div>
+
+            <!-- JSON出力・入力用のテキストエリア -->
+            <textarea 
+                id="plan-json-textarea" 
+                class="plan-io-textarea"
+                rows="15" 
+                placeholder="ここにJSONデータを貼り付けると、自動的に上のリストへプラン名が展開されます。"
+                oninput="handleTextareaInput()"
+            ></textarea>
+
+            <!-- 🌟 ユーティリティボタン群（新設） -->
+            <div class="plan-io-util-group">
+                <button onclick="copyPlanJsonToClipboard()" class="plan-io-btn-util plan-io-btn-copy">
+                    📋 コードをクリップボードにコピー
+                </button>
+                <button onclick="clearPlanJsonTextarea()" class="plan-io-btn-util plan-io-btn-clear">
+                    自由入力モード（クリア）
+                </button>
+            </div>
+
+            <!-- メイン操作ボタン群 -->
+            <div class="plan-io-btn-group" style="margin-top: 20px;">
+                <button onclick="exportAllPlansToTextarea(true)" class="plan-io-btn plan-io-btn-export">
+                    🔄 選択したプランをJSON出力
+                </button>
+                <button onclick="importAllPlansFromTextarea()" class="plan-io-btn plan-io-btn-import">
+                    📥 プランをインポート（実行）
+                </button>
+            </div>
+            
+            <!-- 結果やエラーメッセージを表示する枠 -->
+            <div id="io-message" class="plan-io-message" style="display: none;"></div>
+        </div>
+    </div>
+
+
+
+
 </div>
 
 <script src="js/enchant_data.js"></script>
