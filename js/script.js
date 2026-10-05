@@ -3510,17 +3510,12 @@ function buildDynamicPlanSelectionList(fromLocalStorage = true) {
     }
 
     let html = "";
-    let hasAnyPlan = false;
-
-    // 各カテゴリごとに保存されているプランをループ処理
     for (let key in sourceData) {
         const plans = sourceData[key];
         const planNames = Object.keys(plans);
         if (planNames.length === 0) continue;
 
-        hasAnyPlan = true;
         const config = ROX_KEY_LABELS[key];
-
         html += `
             <div class="plan-io-dynamic-section" id="dynamic-section-${key}">
                 <div class="plan-io-section-subtitle">
@@ -3532,7 +3527,6 @@ function buildDynamicPlanSelectionList(fromLocalStorage = true) {
         `;
 
         planNames.forEach((name, index) => {
-            // 特殊文字や空白によるHTML崩れを防ぐため、安全なエスケープを簡易適用
             const safeName = name.replace(/"/g, '&quot;');
             html += `
                 <label class="plan-io-label-sub">
@@ -3545,7 +3539,8 @@ function buildDynamicPlanSelectionList(fromLocalStorage = true) {
     }
 
     container.innerHTML = html ? `<div style="font-size:0.9em; font-weight:bold; margin-bottom:5px; color:#2d3748;">📌 個別プランの選択フィルター:</div>` + html : "";
-    
+
+    // 🌟 修正：自分のデータをロードした直後のみ自動でTextAreaにテキストを反映
     if (fromLocalStorage) {
         exportAllPlansToTextarea(false);
     }
@@ -3657,13 +3652,11 @@ function importAllPlansFromTextarea() {
     }
 
     try {
-        // 🌟 1. 貼り付けられた生のJSONデータを最優先でパースして安全に確保
         const sourceJsonObject = JSON.parse(jsonText);
         
         let addedCount = 0;
         let replacedCount = 0;
 
-        // チェックが許可されているカテゴリ（キー）を配列化
         let allowedKeys = [];
         if (document.getElementById('io-check-enchant')?.checked) allowedKeys.push("rox_enchant_plans");
         if (document.getElementById('io-check-equip')?.checked) allowedKeys.push("rox_equip_plans");
@@ -3671,49 +3664,39 @@ function importAllPlansFromTextarea() {
         if (document.getElementById('io-check-damage')?.checked) allowedKeys.push("rox_damage_plans");
 
         ROX_STORAGE_KEYS.forEach(key => {
-            // 大元カテゴリにチェックがない、またはJSON内にそのカテゴリが存在しない場合はスキップ
             if (!allowedKeys.includes(key) || !sourceJsonObject[key]) return;
 
-            const newDataBlock = sourceJsonObject[key]; // 貼り付けられたデータ内の特定のカテゴリ（例：エンチャントの全プラン）
-            
-            // 🌟 2. 【核心の修正】画面のDOM（エスケープされたチェックボックス）から名前を取るのを完全にやめます！
-            // 生のJSONデータブロック内に存在する「本物のプラン名」をベースにループを回します。
-            let targetPlanNamesToImport = [];
-            
-            // 現在画面上に配置されているチェックボックスの「選択状態」だけを安全にチェック
+            const newDataBlock = sourceJsonObject[key];
             const subChecks = document.querySelectorAll(`.io-sub-check-${key}`);
             
-            // 貼り付けられたJSON内の各プランが、画面上でチェックされているか確認
+            let targetPlanNamesToImport = [];
+            
             for (let rawPlanName in newDataBlock) {
                 let isChecked = false;
                 
                 subChecks.forEach(cb => {
                     const cbPlanName = cb.getAttribute("data-plan");
-                    // 簡易的な文字列比較、またはチェックボックスの存在確認
-                    // 特殊記号がエスケープされている可能性を考慮し、要素のchecked状態を正確に判定
                     if (cbPlanName === rawPlanName || decodeURIComponent(cbPlanName) === rawPlanName) {
                         if (cb.checked) isChecked = true;
                     }
                 });
                 
-                // 画面に個別リストがまだ生成されていない初期状態（全選択とみなす）またはチェックONの場合に対象とする
+                // 子リストがない状態、またはチェックがONのプランをインポート対象に確定
                 if (subChecks.length === 0 || isChecked) {
                     targetPlanNamesToImport.push(rawPlanName);
                 }
             }
 
-            // ⚠️ パターンA: 入れ替えモード
             if (importMode === "replace") {
                 let filteredBlock = {};
                 targetPlanNamesToImport.forEach(rawName => {
                     if (newDataBlock[rawName]) {
                         filteredBlock[rawName] = newDataBlock[rawName];
-                        replacedCount++;
+                        replacedCount++; // 👑 入れ替え成功数を正確にカウント
                     }
                 });
                 localStorage.setItem(key, JSON.stringify(filteredBlock));
             } 
-            // 👑 パターンB: 追加（マージ）モード
             else {
                 let existingDataBlock = JSON.parse(localStorage.getItem(key)) || {};
 
@@ -3721,22 +3704,22 @@ function importAllPlansFromTextarea() {
                     if (!newDataBlock[rawName]) return;
                     
                     let targetPlanName = rawName;
-                    
-                    // 🛡️ 名前重複ガード（リネームループ）も生の文字列のまま安全に実行
                     while (existingDataBlock[targetPlanName]) {
                         targetPlanName = targetPlanName + "_コピー";
                     }
 
-                    // 既存リストの末尾に、生のプラン名のキーでデータを完全格納！
+                    // 実際に保存処理に移行
                     existingDataBlock[targetPlanName] = newDataBlock[rawName];
-                    addedCount++;
+                    
+                    // 👑【核心の修正】画面ではなく、実際にLocalStorageの連連想配列にプランが追加された瞬間に、確実に「1件」として加算します！
+                    addedCount++; 
                 });
 
                 localStorage.setItem(key, JSON.stringify(existingDataBlock));
             }
         });
 
-        // 💡 画面上のすべてのプルダウンメニューを一斉リフレッシュ
+        // 画面上のすべてのプルダウンメニューを一斉リフレッシュ
         if (typeof updateSavedPlansDropdown_all === 'function') updateSavedPlansDropdown_all();
         if (typeof updateSavedEquipmentPlansDropdown === 'function') updateSavedEquipmentPlansDropdown();
         if (typeof updateSavedOtherPlansDropdown === 'function') updateSavedOtherPlansDropdown();
@@ -3747,11 +3730,16 @@ function importAllPlansFromTextarea() {
         if (typeof calculateEquipmentTotalStatus === 'function') calculateEquipmentTotalStatus();
         if (typeof calculateOtherTotalStatus === 'function') calculateOtherTotalStatus();
 
-        // 自分の最新セーブデータ（LocalStorage）の状態で画面の見た目を再構築
+        // 画面カテゴリのチェック状態の復元と、チェックリストの完全同期
+        ROX_STORAGE_KEYS.forEach(key => {
+            const el = document.getElementById(ROX_KEY_LABELS[key].checkId);
+            if (el) el.checked = true;
+        });
         buildDynamicPlanSelectionList(true);
 
+        // 🌟 正確になった数値をもとにメッセージを描画
         if (importMode === "replace") {
-            showIOMessage(`🎉 選んだプランのみを抽出し、一括入れ替えを完了しました。(計 ${replacedCount} 個)`, "success");
+            showIOMessage(`🎉 選んだプランのみを抽出し、一括入れ替えを完了しました。(計 ${replacedCount} 個のプランを適用)`, "success");
         } else {
             showIOMessage(`🎉 選択した ${addedCount} 個のプランを現在のリストに安全に追加しました！\n(名前が同じプランは自動で「_コピー」にリネームされました)`, "success");
         }
@@ -3760,7 +3748,6 @@ function importAllPlansFromTextarea() {
         showIOMessage(`❌ インポートに失敗しました。JSONデータの記述に問題があります。\nエラー: ${error.message}`, "error");
     }
 }
-
 
 /**
  * 🌟【修正版】補助リンク用：大元カテゴリの一括全選択・全解除
