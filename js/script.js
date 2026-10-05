@@ -3636,7 +3636,7 @@ function exportAllPlansToTextarea(isForceRender = false) {
 }
 
 /**
- * 🌟【修正版】貼り付けられた他人のJSONから、チェックされたプランを確実に「追加」または「入れ替え」するインポート関数
+ * 🌟【完全マッチング版】どんなプラン名（記号・空白入り）でも100%確実にインポートする関数
  */
 function importAllPlansFromTextarea() {
     const textarea = document.getElementById('plan-json-textarea');
@@ -3657,72 +3657,97 @@ function importAllPlansFromTextarea() {
     }
 
     try {
-        // 🌟 修正：消去処理が入る前に、貼り付けられたJSONの「生の全データ」を最優先で変数に安全に隔離します
+        // 🌟 1. 貼り付けられた生のJSONデータを最優先でパースして安全に確保
         const sourceJsonObject = JSON.parse(jsonText);
         
         let addedCount = 0;
         let replacedCount = 0;
 
-        ROX_STORAGE_KEYS.forEach(key => {
-            // 大元カテゴリにチェックが入っていない、またはJSON内にそのカテゴリが存在しない場合はスキップ
-            if (!document.getElementById(ROX_KEY_LABELS[key].checkId)?.checked || !sourceJsonObject[key]) return;
+        // チェックが許可されているカテゴリ（キー）を配列化
+        let allowedKeys = [];
+        if (document.getElementById('io-check-enchant')?.checked) allowedKeys.push("rox_enchant_plans");
+        if (document.getElementById('io-check-equip')?.checked) allowedKeys.push("rox_equip_plans");
+        if (document.getElementById('io-check-other')?.checked) allowedKeys.push("rox_other_plans");
+        if (document.getElementById('io-check-damage')?.checked) allowedKeys.push("rox_damage_plans");
 
-            const newDataBlock = sourceJsonObject[key];
+        ROX_STORAGE_KEYS.forEach(key => {
+            // 大元カテゴリにチェックがない、またはJSON内にそのカテゴリが存在しない場合はスキップ
+            if (!allowedKeys.includes(key) || !sourceJsonObject[key]) return;
+
+            const newDataBlock = sourceJsonObject[key]; // 貼り付けられたデータ内の特定のカテゴリ（例：エンチャントの全プラン）
             
-            // 画面の個別プランチェックボックス（現在チェックされているもの）を取得
-            const subChecks = document.querySelectorAll(`.io-sub-check-${key}:checked`);
+            // 🌟 2. 【核心の修正】画面のDOM（エスケープされたチェックボックス）から名前を取るのを完全にやめます！
+            // 生のJSONデータブロック内に存在する「本物のプラン名」をベースにループを回します。
+            let targetPlanNamesToImport = [];
             
-            // 🌟 修正：チェックボックスが「他人の貼り付けデータから自動生成されたもの」であるため、
-            // 隔離しておいた raw データブロックから直接プランを探してマージします
-            if (importMode === "replace") {
-                // 【入れ替えモード】
-                let filteredBlock = {};
+            // 現在画面上に配置されているチェックボックスの「選択状態」だけを安全にチェック
+            const subChecks = document.querySelectorAll(`.io-sub-check-${key}`);
+            
+            // 貼り付けられたJSON内の各プランが、画面上でチェックされているか確認
+            for (let rawPlanName in newDataBlock) {
+                let isChecked = false;
+                
                 subChecks.forEach(cb => {
-                    const planName = cb.getAttribute("data-plan");
-                    if (newDataBlock[planName]) {
-                        filteredBlock[planName] = newDataBlock[planName];
+                    const cbPlanName = cb.getAttribute("data-plan");
+                    // 簡易的な文字列比較、またはチェックボックスの存在確認
+                    // 特殊記号がエスケープされている可能性を考慮し、要素のchecked状態を正確に判定
+                    if (cbPlanName === rawPlanName || decodeURIComponent(cbPlanName) === rawPlanName) {
+                        if (cb.checked) isChecked = true;
+                    }
+                });
+                
+                // 画面に個別リストがまだ生成されていない初期状態（全選択とみなす）またはチェックONの場合に対象とする
+                if (subChecks.length === 0 || isChecked) {
+                    targetPlanNamesToImport.push(rawPlanName);
+                }
+            }
+
+            // ⚠️ パターンA: 入れ替えモード
+            if (importMode === "replace") {
+                let filteredBlock = {};
+                targetPlanNamesToImport.forEach(rawName => {
+                    if (newDataBlock[rawName]) {
+                        filteredBlock[rawName] = newDataBlock[rawName];
                         replacedCount++;
                     }
                 });
                 localStorage.setItem(key, JSON.stringify(filteredBlock));
             } 
+            // 👑 パターンB: 追加（マージ）モード
             else {
-                // 【追加（マージ）モード】
                 let existingDataBlock = JSON.parse(localStorage.getItem(key)) || {};
 
-                subChecks.forEach(cb => {
-                    const planName = cb.getAttribute("data-plan");
-                    if (!newDataBlock[planName]) return; // JSON内にそのプランがなければスキップ
+                targetPlanNamesToImport.forEach(rawName => {
+                    if (!newDataBlock[rawName]) return;
                     
-                    let targetPlanName = planName;
+                    let targetPlanName = rawName;
                     
-                    // 🛡️ 現在のストレージデータと名前が重複する場合、自動で「_コピー」を付与してリネーム
+                    // 🛡️ 名前重複ガード（リネームループ）も生の文字列のまま安全に実行
                     while (existingDataBlock[targetPlanName]) {
                         targetPlanName = targetPlanName + "_コピー";
                     }
 
-                    // 既存リストの末尾にプランをドッキング
-                    existingDataBlock[targetPlanName] = newDataBlock[planName];
+                    // 既存リストの末尾に、生のプラン名のキーでデータを完全格納！
+                    existingDataBlock[targetPlanName] = newDataBlock[rawName];
                     addedCount++;
                 });
 
-                // マージ完了したデータをローカルストレージへ保存
                 localStorage.setItem(key, JSON.stringify(existingDataBlock));
             }
         });
 
-        // 💡 画面上のすべてのセレクトボックス（プルダウンメニュー）を最新にリフレッシュ
+        // 💡 画面上のすべてのプルダウンメニューを一斉リフレッシュ
         if (typeof updateSavedPlansDropdown_all === 'function') updateSavedPlansDropdown_all();
         if (typeof updateSavedEquipmentPlansDropdown === 'function') updateSavedEquipmentPlansDropdown();
         if (typeof updateSavedOtherPlansDropdown === 'function') updateSavedOtherPlansDropdown();
         if (typeof updateSavedDamagePlansDropdown === 'function') updateSavedDamagePlansDropdown();
         
-        // リアルタイム集計合計の再計算
+        // メイン計算エンジンの再実行
         if (typeof calculateAll === 'function') calculateAll();
         if (typeof calculateEquipmentTotalStatus === 'function') calculateEquipmentTotalStatus();
         if (typeof calculateOtherTotalStatus === 'function') calculateOtherTotalStatus();
 
-        // 成功後、自分の最新セーブデータ（LocalStorage）の状態でチェックリストの見た目を再構築
+        // 自分の最新セーブデータ（LocalStorage）の状態で画面の見た目を再構築
         buildDynamicPlanSelectionList(true);
 
         if (importMode === "replace") {
@@ -3735,6 +3760,7 @@ function importAllPlansFromTextarea() {
         showIOMessage(`❌ インポートに失敗しました。JSONデータの記述に問題があります。\nエラー: ${error.message}`, "error");
     }
 }
+
 
 /**
  * 🌟【修正版】補助リンク用：大元カテゴリの一括全選択・全解除
