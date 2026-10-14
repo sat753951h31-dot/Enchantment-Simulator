@@ -1555,3 +1555,54 @@ input[type="radio"] {
     color: #e53e3e;
     border-color: #feb2b2;
 }
+
+/* ==========================================================================
+   ✨ 性能覚醒 縦並び入力＆集中出力型 専用レイアウト
+   ========================================================================== */
+/* 性能覚醒バー全体を横いっぱいに広げ、左右を綺麗に分ける */
+.sinmon-vertical-layout .ability-awake-main-row {
+    max-width: 100% !important;
+    min-height: 160px; /* 縦に並んだ項目が綺麗に収まる高さ */
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+/* 左側の設定項目を縦並びにするゾーン */
+.ability-awake-main-row .ability-awake-inputs-zone {
+    display: flex !important;
+    flex-direction: column !important; /* ⭕ ここで武器・防具・装飾を完全縦並びに強制 */
+    gap: 10px !important;
+    flex: 1 !important;
+}
+
+/* 各縦並びアイテム内のラベル幅を統一してガタつきを無くす */
+.ability-awake-inputs-zone .bulk-control-item .long-label {
+    width: 130px !important;
+    display: inline-block;
+}
+
+/* 性能覚醒レベルのプルダウンだけ神紋サイズに少し広げてフィットさせる */
+.ability-awake-inputs-zone .awake-level-item .sinmon-stat-select {
+    width: 140px !important;
+}
+
+/* 右端の％集中出力テキストを縦幅中央で大きく目立たせる */
+.ability-awake-main-row .awake-total-display {
+    font-size: 20px !important; /* 合算値なので少し大きめで見やすく */
+    width: 120px !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+}
+
+/* 武器覚醒用の補正（既存流用） */
+.slot-selectors-group .full-width-item {
+    width: 100% !important;
+    justify-content: flex-start !important;
+}
+.slot-selectors-group .phase-select {
+    width: 160px !important;
+}

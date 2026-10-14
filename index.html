@@ -678,6 +678,123 @@
 
             <div id="dynamicCrestContainer" class="sinmon-vertical-layout"></div>
         </div>
+        
+        <!-- ============================================================
+             🌟 新設 ①：性能覚醒セクション（縦並び選択 ＆ 集中右側％出力版）
+             ============================================================ -->
+        <div class="other-content-box-container">
+            <div class="box-header-row">
+                <div class="box-title-side">
+                    <span class="blue-vertical-line">|</span> 💎 性能覚醒
+                </div>
+                <button class="btn-box-reset" onclick="resetSectionValues('awake')">リセット</button>
+            </div>
+            
+            <div class="box-divider"></div>
+            
+            <!-- 神紋やペットと同じ美しい幅広バー構造に統一 -->
+            <div class="sinmon-vertical-layout ability-awake-layout">
+                <div class="sinmon-slot-row ability-awake-main-row">
+                    
+                    <!-- 左側：設定項目エリア（縦並びで綺麗に配置） -->
+                    <div class="ability-awake-inputs-zone">
+                        <!-- 性能覚醒レベル -->
+                        <div class="bulk-control-item awake-level-item">
+                            <span class="control-item-label long-label">性能覚醒レベル:</span>
+                            <select id="other_ability_awake_lv" class="sinmon-stat-select" onchange="calculateOtherTotalStatus()">
+                                <option value="0" selected>未解放 (0)</option>
+                                <script>
+                                    for(let lv=40; lv<=120; lv+=5) {
+                                        document.write(`<option value="${lv}">Lv.${lv}</option>`);
+                                    }
+                                </script>
+                            </select>
+                        </div>
+                        
+                        <!-- 性能レベル：武器 -->
+                        <div class="bulk-control-item">
+                            <span class="control-item-label long-label">⚔️ 性能レベル武器:</span>
+                            <select id="other_ability_wpn_grade" class="sinmon-color-select" onchange="calculateOtherTotalStatus()">
+                                <option value="0" selected>なし (0.0)</option>
+                                <option value="0.1">白 (0.1)</option>
+                                <option value="0.2">青 (0.2)</option>
+                                <option value="0.3">紫 (0.3)</option>
+                                <option value="0.4">橙 (0.4)</option>
+                            </select>
+                        </div>
+
+                        <!-- 性能レベル：防具 -->
+                        <div class="bulk-control-item">
+                            <span class="control-item-label long-label">🛡️ 性能レベル防具:</span>
+                            <select id="other_ability_arm_grade" class="sinmon-color-select" onchange="calculateOtherTotalStatus()">
+                                <option value="0" selected>なし (0.0)</option>
+                                <option value="0.1">白 (0.1)</option>
+                                <option value="0.2">青 (0.2)</option>
+                                <option value="0.3">紫 (0.3)</option>
+                                <option value="0.4">橙 (0.4)</option>
+                            </select>
+                        </div>
+
+                        <!-- 性能レベル：装飾 -->
+                        <div class="bulk-control-item">
+                            <span class="control-item-label long-label">📿 性能レベル装飾:</span>
+                            <select id="other_ability_acc_grade" class="sinmon-color-select" onchange="calculateOtherTotalStatus()">
+                                <option value="0" selected>なし (0.0)</option>
+                                <option value="0.1">白 (0.1)</option>
+                                <option value="0.2">青 (0.2)</option>
+                                <option value="0.3">紫 (0.3)</option>
+                                <option value="0.4">橙 (0.4)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 👑 右端：計算式の結果の％をまとめてドンと出す出力エリア -->
+                    <div id="other_ability_total_val" class="slot-value-display-side awake-total-display">-</div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             🌟 新設 ②：武器覚醒セクション（変更なし）
+             ============================================================ -->
+        <div class="other-content-box-container">
+            <div class="box-header-row">
+                <div class="box-title-side">
+                    <span class="blue-vertical-line">|</span> ⚔️ 武器覚醒
+                </div>
+            </div>
+            
+            <div class="box-divider"></div>
+            
+            <div class="sinmon-vertical-layout">
+                <div class="sinmon-slot-row">
+                    <div class="slot-index-label long-label">進行フェーズ</div>
+                    <div class="slot-selectors-group">
+                        <div class="bulk-control-item full-width-item">
+                            <span class="control-item-label">現在の段階:</span>
+                            <select id="other_wpn_awake_phase" class="sinmon-color-select phase-select" onchange="calculateOtherTotalStatus()">
+                                <option value="0" selected>未開放</option>
+                                <option value="1">フェーズ 1</option>
+                                <option value="2">フェーズ 2</option>
+                                <option value="3">フェーズ 3</option>
+                                <option value="4">フェーズ 4</option>
+                                <option value="5">フェーズ 5</option>
+                                <option value="6">フェーズ 6</option>
+                                <option value="7">フェーズ 7</option>
+                                <option value="8">フェーズ 8</option>
+                                <option value="9">フェーズ 9</option>
+                                <option value="10">フェーズ 10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="other_wpn_awake_val" class="slot-value-display-side">-</div>
+                </div>
+            </div>
+        </div>
+
+
+
 
     </div>
 
@@ -1018,6 +1135,7 @@
 <script src="js/equip_item_data.js"></script>
 <script src="js/sinmon_item_data.js"></script>
 <script src="js/pet_data.js"></script>
+<script src="js/awake_data.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

@@ -2853,7 +2853,79 @@ function calculateOtherTotalStatus() {
             }
         }
     }
+    
+    // ============================================================
+    // 🌟 新設 ①：性能覚醒の計算処理（外部データ完全連動版）
+    // ============================================================
+    const abilityAwakeLv = parseInt(document.getElementById("other_ability_awake_lv")?.value) || 0;
+    const abilityWpnGrade = parseFloat(document.getElementById("other_ability_wpn_grade")?.value) || 0;
+    const abilityArmGrade = parseFloat(document.getElementById("other_ability_arm_grade")?.value) || 0;
+    const abilityAccGrade = parseFloat(document.getElementById("other_ability_acc_grade")?.value) || 0;
 
+    if (abilityAwakeLv > 0) {
+        // 3部位すべてに値が入っている場合のみ計算（なし(0)が混ざっていたらガード）
+        if (abilityWpnGrade === 0 || abilityArmGrade === 0 || abilityAccGrade === 0) {
+            document.getElementById("other_ability_total_val").textContent = "-";
+        } 
+        else {
+            // 🌟 外部JS（js/awake_data.js）から選ばれたレベルの係数を安全に引き出す
+            const currentFactor = (typeof abilityFactorMaster !== 'undefined') ? (abilityFactorMaster[abilityAwakeLv] || 1.5) : 1.5;
+            
+            // 3つの部位レベルの合計
+            const totalGradeSum = abilityWpnGrade + abilityArmGrade + abilityAccGrade;
+            
+            // 🔥 計算式: [外部マスタから取得した可変係数] * (武器 + 防具 + 装飾)
+            const totalAwakeBonus = Math.round((currentFactor * totalGradeSum) * 100) / 100;
+
+            if (totalAwakeBonus > 0) {
+                document.getElementById("other_ability_total_val").textContent = `+${totalAwakeBonus}%`;
+
+                addOtherStat("最終物理増強", totalAwakeBonus, true);
+                addOtherStat("最終魔法増強", totalAwakeBonus, true);
+                addOtherStat("最終物理ダメージ軽減", totalAwakeBonus, true);
+                addOtherStat("最終魔法ダメージ軽減", totalAwakeBonus, true);
+            } else {
+                document.getElementById("other_ability_total_val").textContent = "+0%";
+            }
+        }
+    } else {
+        document.getElementById("other_ability_total_val").textContent = "-";
+    }
+
+    // ============================================================
+    // 🌟 新設 ②：武器覚醒の計算処理（外部データ完全連動版）
+    // ============================================================
+    const wpnAwakePhase = parseInt(document.getElementById("other_wpn_awake_phase")?.value) || 0;
+
+    if (wpnAwakePhase > 0) {
+        let totalHakou = 0;
+        let totalShugo = 0;
+
+        // 🌟 外部JS（js/awake_data.js）からフェーズに応じた破甲・守護の基礎データを引っ張る
+        if (typeof weaponAwakeMaster !== 'undefined' && weaponAwakeMaster[wpnAwakePhase]) {
+            totalHakou = weaponAwakeMaster[wpnAwakePhase].hakou;
+            totalShugo = weaponAwakeMaster[wpnAwakePhase].shugo;
+        } else {
+            // 万が一データファイルが壊れていた場合のフォールバック（従来のフェーズ比例計算）
+            totalHakou = wpnAwakePhase * 30;
+            totalShugo = wpnAwakePhase * 20;
+        }
+
+//        addOtherStat("破甲", totalHakou, false);
+//        addOtherStat("守護", totalShugo, false);
+
+        // 最終ダメージ増加・軽減への変換 (10につき1%)
+        const finalDmgUp = Math.round((totalHakou / 10) * 100) / 100;
+        const finalDmgRes = Math.round((totalShugo / 10) * 100) / 100;
+
+        addOtherStat("最終ダメージ増加", finalDmgUp, true);
+        addOtherStat("最終ダメージ軽減", finalDmgRes, true);
+
+        // 右側の表示エリアに、マスタから引っ張ってきた数値を描画
+        document.getElementById("other_wpn_awake_val").innerHTML = `破甲+${totalHakou}<br>守護+${totalShugo}`;
+    } else {
+        document.getElementById("other_wpn_awake_val").textContent = "-";
+    }
 
 
     // ---=================================================
@@ -2972,7 +3044,15 @@ function resetSectionValues(sectionKey) {
             calculateOtherTotalStatus();
         }
     }
-
+    else if (sectionKey === 'awake') {
+        if (document.getElementById("other_ability_awake_lv")) document.getElementById("other_ability_awake_lv").value = "0";
+        if (document.getElementById("other_ability_wpn_grade")) document.getElementById("other_ability_wpn_grade").value = "0";
+        if (document.getElementById("other_ability_arm_grade")) document.getElementById("other_ability_arm_grade").value = "0";
+        if (document.getElementById("other_ability_acc_grade")) document.getElementById("other_ability_acc_grade").value = "0";
+        if (document.getElementById("other_wpn_awake_phase")) document.getElementById("other_wpn_awake_phase").value = "0";
+        if (document.getElementById("other_ability_total_val")) document.getElementById("other_ability_total_val").textContent = "-";
+        if (document.getElementById("other_wpn_awake_val")) document.getElementById("other_wpn_awake_val").textContent = "-";
+    }
     
     if (typeof calculateOtherTotalStatus === 'function') {
         calculateOtherTotalStatus();
@@ -3040,6 +3120,16 @@ function saveCurrentOtherPlan() {
             attr_dmg: document.getElementById("other_shadow_attr_dmg_lv")?.value || "0",
             attr_res: document.getElementById("other_shadow_attr_res_lv")?.value || "0"
         },
+        abilityAwakeValues: {
+            level: document.getElementById("other_ability_awake_lv")?.value || "0",
+            weapon: document.getElementById("other_ability_wpn_grade")?.value || "0",
+            armor: document.getElementById("other_ability_arm_grade")?.value || "0",
+            accessory: document.getElementById("other_ability_acc_grade")?.value || "0"
+        },
+        weaponAwakeValues: {
+            phase: document.getElementById("other_wpn_awake_phase")?.value || "0"
+        },
+
         sinmonValuesObj: {} // 💡 すべての神紋の値を格納する巨大な連想配列
     };
 
@@ -3151,6 +3241,16 @@ function loadSelectedOtherPlan() {
 
         if (document.getElementById("other_shadow_attr_res_lv"))
             document.getElementById("other_shadow_attr_res_lv").value = plan.shadowValues.attr_res;
+    }
+
+    if (plan.abilityAwakeValues) {
+        if (document.getElementById("other_ability_awake_lv")) document.getElementById("other_ability_awake_lv").value = plan.abilityAwakeValues.level;
+        if (document.getElementById("other_ability_wpn_grade")) document.getElementById("other_ability_wpn_grade").value = plan.abilityAwakeValues.weapon;
+        if (document.getElementById("other_ability_arm_grade")) document.getElementById("other_ability_arm_grade").value = plan.abilityAwakeValues.armor;
+        if (document.getElementById("other_ability_acc_grade")) document.getElementById("other_ability_acc_grade").value = plan.abilityAwakeValues.accessory;
+    }
+    if (plan.weaponAwakeValues) {
+        if (document.getElementById("other_wpn_awake_phase")) document.getElementById("other_wpn_awake_phase").value = plan.weaponAwakeValues.phase;
     }
 
     // 💡 全神紋の一括復元処理

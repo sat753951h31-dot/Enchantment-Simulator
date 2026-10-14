@@ -1,5 +1,214 @@
 const cardMaster = {
+  "card_340": {
+    "name": "オシリス",
+    "slot": "装飾(アクセ/お守り)",
+    "effects": [
+      { "type": "聖属性強化", "value": 10.0, "is_percent": true },
+      { "type": "無属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+  "card_339": {
+    "name": "ナハトズィーガー",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "中型モンスター被ダメージ軽減", "value": 15.0, "is_percent": true },
+      { "type": "MaxHP", "value": 14.0, "is_percent": true },
+    ]
+  },
+  "card_338": {
+    "name": "異形のシーラカンス",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "聖属性強化", "value": 15.0, "is_percent": true },
+      { "type": "無属性強化", "value": 15.0, "is_percent": true },
+      { "type": "VIT", "value": 30.0, "is_percent": false }
+    ]
+  },
+  "card_337": {
+    "name": "ゾンビスローターカード",
+    "slot": "靴",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終ダメージ軽減", "value": 6.0, "is_percent": true }
+    ]
+  },
+  "card_336": {
+    "name": "ブラッディマーダーカード",
+    "slot": "尻尾",
+    "is_elite": true,
+    "effects": [
+      { "type": "PVP最終物理ダメージ軽減", "value": 8.0, "is_percent": true },
+      { "type": "PVP最終魔法ダメージ軽減", "value": 8.0, "is_percent": true }
+    ]
+  },
+  "card_335": {
+    "name": "ビートルカード",
+    "slot": "武器",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終ASPD", "value": 80.0, "is_percent": true }
+    ]
+  },
 
+  "card_334": {
+    "name": "チョコカード",
+    "slot": "武器",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終ヘイスト", "value": 8.0, "is_percent": true }
+    ]
+  },
+
+  "card_333": {
+    "name": "ヘルプードルカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "中型モンスター被ダメージ軽減", "value": 13.0, "is_percent": true }
+    ]
+  },
+
+  "card_332": {
+    "name": "ウドゥンゴーレムカード",
+    "slot": "服装",
+    "is_elite": true,
+    "effects": [
+      { "type": "MaxHP", "value": 9.0, "is_percent": true },
+      { "type": "VIT", "value": 30.0, "is_percent": false }
+    ]
+  },
+
+  "card_331": {
+    "name": "ラギッドゾンビカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "無属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_330": {
+    "name": "デュラハンカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "火属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_329": {
+    "name": "ウータンファイターカード",
+    "slot": "鎧",
+    "is_elite": true,
+    "effects": [
+      { "type": "VIT", "value": 7.0, "is_percent": true },
+      { "type": "VIT", "value": 22.0, "is_percent": false }
+    ]
+  },
+
+  "card_328": {
+    "name": "ドラゴンテイルカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "聖属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_327": {
+    "name": "メデューサカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "毒属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_326": {
+    "name": "ドリアードカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "地属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_325": {
+    "name": "ジビットカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "念属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_324": {
+    "name": "バンシーカード",
+    "slot": "肩",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終CRI回避", "value": 12.0, "is_percent": true },
+      { "type": "VIT", "value": 20.0, "is_percent": false }
+    ]
+  },
+
+  "card_323": {
+    "name": "フェアリーフカード",
+    "slot": "背中",
+    "is_elite": true,
+    "effects": [
+      { "type": "PVPデバフ耐性", "value": 10.0, "is_percent": true },
+      { "type": "MaxHP", "value": 7.0, "is_percent": true }
+    ]
+  },
+
+  "card_322": {
+    "name": "フレイムシューターカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "LUK", "value": 55.0, "is_percent": false }
+    ]
+  },
+
+  "card_321": {
+    "name": "ウータンシューターカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "水属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_320": {
+    "name": "ドリラーカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "AGI", "value": 55.0, "is_percent": false }
+    ]
+  },
+
+  "card_319": {
+    "name": "フレームスカルカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "風属性強化", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_318": {
+    "name": "ロリルリカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "人間形モンスター被ダメージ軽減", "value": 13.0, "is_percent": true }
+    ]
+  },
+  
   "card_317": {
     "name": "致命・幼地竜カード",
     "slot": "衣装",
