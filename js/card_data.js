@@ -1,4 +1,22 @@
 const cardMaster = {
+  "card_342": {
+    "name": "ヴェルゼブブカード",
+    "slot": "鎧",
+    "is_elite": true,
+    "effects": [
+            { "type": "VIT", "value": 40.0, "is_percent": false },
+      { "type": "最終ダメージ軽減", "value": 9.0, "is_percent": true }
+    ]
+  },
+  "card_341": {
+    "name": "ロードオブデスカード",
+    "slot": "武器",
+    "is_elite": true,
+    "effects": [
+      { "type": "最終ASPD", "value": 50.0, "is_percent": true },
+      { "type": "最終ダメージ増加", "value": 9.0, "is_percent": true }
+    ]
+  },
   "card_340": {
     "name": "オシリス",
     "slot": "装飾(アクセ/お守り)",
