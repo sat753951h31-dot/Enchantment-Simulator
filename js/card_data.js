@@ -1,4 +1,81 @@
 const cardMaster = {
+  "card_351": {
+    "name": "マッドハッターカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "PVP最終物理増幅", "value": 18.0, "is_percent": true },
+      { "type": "物理増幅", "value": 17.0, "is_percent": true }
+    ]
+  },
+
+  "card_344": {
+    "name": "パンドラキャットカード",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "PVP最終魔法増幅", "value": 18.0, "is_percent": true },
+      { "type": "魔法増幅", "value": 17.0, "is_percent": true }
+    ]
+  },
+
+  "card_345": {
+    "name": "スマイルラビットカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "人間形モンスターダメージ増加", "value": 18.0, "is_percent": true },
+      { "type": "物理増強", "value": 1000.0, "is_percent": false }
+    ]
+  },
+
+  "card_346": {
+    "name": "ドリームハッターカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "人間形モンスターダメージ増加", "value": 18.0, "is_percent": true },
+      { "type": "魔法増強", "value": 1000.0, "is_percent": false }
+    ]
+  },
+
+  "card_347": {
+    "name": "マッドハッターカード【無垢】",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "物理増強", "value": 800.0, "is_percent": false },
+      { "type": "物理増幅", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_348": {
+    "name": "パンドラキャットカード【悪原】",
+    "slot": "衣装",
+    "is_elite": true,
+    "effects": [
+      { "type": "魔法増強", "value": 800.0, "is_percent": false },
+      { "type": "魔法増幅", "value": 10.0, "is_percent": true }
+    ]
+  },
+
+  "card_349": {
+    "name": "スマイルラビットカード",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "PVP最終物理増幅", "value": 12.0, "is_percent": true }
+    ]
+  },
+
+  "card_350": {
+    "name": "ドリームハッターカード【星海】",
+    "slot": "装飾(アクセ/お守り)",
+    "is_elite": true,
+    "effects": [
+      { "type": "PVP最終魔法増幅", "value": 12.0, "is_percent": true }
+    ]
+  },
   "card_342": {
     "name": "ヴェルゼブブカード",
     "slot": "鎧",

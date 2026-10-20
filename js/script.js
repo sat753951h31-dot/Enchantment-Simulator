@@ -2911,15 +2911,15 @@ function calculateOtherTotalStatus() {
             totalShugo = wpnAwakePhase * 20;
         }
 
-//        addOtherStat("破甲", totalHakou, false);
-//        addOtherStat("守護", totalShugo, false);
+        addOtherStat("破甲", totalHakou, false);
+        addOtherStat("守護", totalShugo, false);
 
         // 最終ダメージ増加・軽減への変換 (10につき1%)
-        const finalDmgUp = Math.round((totalHakou / 10) * 100) / 100;
-        const finalDmgRes = Math.round((totalShugo / 10) * 100) / 100;
+//        const finalDmgUp = Math.round((totalHakou / 10) * 100) / 100;
+//        const finalDmgRes = Math.round((totalShugo / 10) * 100) / 100;
 
-        addOtherStat("最終ダメージ増加", finalDmgUp, true);
-        addOtherStat("最終ダメージ軽減", finalDmgRes, true);
+//        addOtherStat("最終ダメージ増加", finalDmgUp, true);
+//        addOtherStat("最終ダメージ軽減", finalDmgRes, true);
 
         // 右側の表示エリアに、マスタから引っ張ってきた数値を描画
         document.getElementById("other_wpn_awake_val").innerHTML = `破甲+${totalHakou}<br>守護+${totalShugo}`;
