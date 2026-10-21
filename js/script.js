@@ -32,7 +32,7 @@ const subIndices = [1, 2, 3];
 const levels = ["Lv16", "Lv17", "Lv18", "Lv19", "Lv20"];
 const grades = ["白", "青", "紫", "橙"];
 
-const cityOrder = ["アルベルタ","フェイヨン", "ゲフェン", "アルデバラン", "コモド"];
+const cityOrder = ["アルベルタ","フェイヨン", "ゲフェン", "アルデバラン", "コモド", "ウンバラ"];
 
 let statusCityMap = {};
 
@@ -2913,13 +2913,6 @@ function calculateOtherTotalStatus() {
 
         addOtherStat("破甲", totalHakou, false);
         addOtherStat("守護", totalShugo, false);
-
-        // 最終ダメージ増加・軽減への変換 (10につき1%)
-//        const finalDmgUp = Math.round((totalHakou / 10) * 100) / 100;
-//        const finalDmgRes = Math.round((totalShugo / 10) * 100) / 100;
-
-//        addOtherStat("最終ダメージ増加", finalDmgUp, true);
-//        addOtherStat("最終ダメージ軽減", finalDmgRes, true);
 
         // 右側の表示エリアに、マスタから引っ張ってきた数値を描画
         document.getElementById("other_wpn_awake_val").innerHTML = `破甲+${totalHakou}<br>守護+${totalShugo}`;
