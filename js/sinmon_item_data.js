@@ -81,6 +81,16 @@ const sinmonItemMaster = {
     "sword": {
         "name": "剣の神紋",
         "stats": {
+            "p_dmg_res": {
+                "label": "最終物理ダメージ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "m_dmg_res": {
+                "label": "最終魔法ダメージ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
             "pvp_p_dmg_res": {
                 "label": "PVP最終物理ダメージ軽減",
                 "is_percent": true,
@@ -242,5 +252,70 @@ const sinmonItemMaster = {
             "values": { "white": 4.6, "blue": 9.2, "purple": 12.9, "orange": 18.4 }
             }
         }
-    }
+    },
+    "harp": {
+        "name": "琴の神紋",
+        "stats": {
+            "p_dmg_res": {
+                "label": "最終物理ダメージ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "m_dmg_res": {
+                "label": "最終魔法ダメージ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "pvp_p_dmg_res": {
+                "label": "PVP最終物理ダメージ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "pvp_m_dmg_res": {
+                "label": "PVP最終魔法ダメージ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "pvp_debuff_res": {
+                "label": "PVPデバフ軽減",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "pvp_debuff_tolerance": {
+                "label": " PVPデバフ耐性",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "pvp_p_amp_fix": {
+                "label": "PVP物理増強",
+                "is_percent": false,
+                "values": { "white": 230.0, "blue": 459.0, "purple": 643.0, "orange": 919.0 }
+            },
+            "pvp_m_amp_fix": {
+                "label": "PVP魔法増強",
+                "is_percent": false,
+                "values": { "white": 230.0, "blue": 459.0, "purple": 643.0, "orange": 919.0 }
+            },
+            "pvp_p_amp_pct": {
+                "label": "PVP最終物理増強",
+                "is_percent": true,
+                "values": { "white": 4.6, "blue": 9.2, "purple": 12.9, "orange": 18.4 }
+            },
+            "pvp_m_amp_pct": {
+                "label": "PVP最終魔法増強",
+                "is_percent": true,
+                "values": { "white": 4.6, "blue": 9.2, "purple": 12.9, "orange": 18.4 }
+            },
+            "pvp_debuff_pen": {
+                "label": "PVPデバフ貫通",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            },
+            "pvp_debuff_amp": {
+                "label": "PVPデバフ増強",
+                "is_percent": true,
+                "values": { "white": 7.7, "blue": 15.3, "purple": 21.4, "orange": 30.6 }
+            }
+        }
+    },
 };

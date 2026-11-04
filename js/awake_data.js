@@ -19,14 +19,9 @@ const abilityFactorMaster = {
 // 今後「フェーズごとに増え方が変わる」「後半に大きく伸びる」仕様になっても、ここを直接いじれます。
 const weaponAwakeMaster = {
     0:  { hakou: 0,   shugo: 0 },
-    1:  { hakou: 30,  shugo: 20 },
-    2:  { hakou: 60,  shugo: 40 },
-    3:  { hakou: 84,  shugo: 56 },
-    4:  { hakou: 108, shugo: 72 },
-    5:  { hakou: 132, shugo: 88 },
-    6:  { hakou: 180, shugo: 120 },
-    7:  { hakou: 210, shugo: 140 },
-    8:  { hakou: 240, shugo: 160 },
-    9:  { hakou: 270, shugo: 180 },
-    10: { hakou: 300, shugo: 200 }
+    1:  { hakou: 30,  shugo: 20 , hakouDM: 30,   shugoRG: 16.67 },
+    2:  { hakou: 60,  shugo: 40 , hakouDM: 60,   shugoRG: 24.84 },
+    3:  { hakou: 84,  shugo: 56 , hakouDM: 84,   shugoRG: 33.24 },
+    4:  { hakou: 108, shugo: 72 , hakouDM: 108,  shugoRG: 41.86 },
+    5:  { hakou: 132, shugo: 88 , hakouDM: 132,  shugoRG: 51.17 }
 };

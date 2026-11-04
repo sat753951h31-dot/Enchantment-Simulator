@@ -2900,19 +2900,25 @@ function calculateOtherTotalStatus() {
     if (wpnAwakePhase > 0) {
         let totalHakou = 0;
         let totalShugo = 0;
-
+        let totalHakouDM = 0;
+        let totalShugoRG = 0;
+        
         // 🌟 外部JS（js/awake_data.js）からフェーズに応じた破甲・守護の基礎データを引っ張る
         if (typeof weaponAwakeMaster !== 'undefined' && weaponAwakeMaster[wpnAwakePhase]) {
             totalHakou = weaponAwakeMaster[wpnAwakePhase].hakou;
             totalShugo = weaponAwakeMaster[wpnAwakePhase].shugo;
+            totalHakouDM = weaponAwakeMaster[wpnAwakePhase].hakouDM;
+            totalShugoRG = weaponAwakeMaster[wpnAwakePhase].shugoRG;
         } else {
             // 万が一データファイルが壊れていた場合のフォールバック（従来のフェーズ比例計算）
             totalHakou = wpnAwakePhase * 30;
             totalShugo = wpnAwakePhase * 20;
+            totalHakouDM = wpnAwakePhase * 30;
+            totalShugoRG = wpnAwakePhase * 20;
         }
 
-        addOtherStat("破甲", totalHakou, false);
-        addOtherStat("守護", totalShugo, false);
+        addOtherStat("破甲(与ダメージ増加)", totalHakouDM, true);
+        addOtherStat("守護(被ダメージ軽減)", totalShugoRG, true);
 
         // 右側の表示エリアに、マスタから引っ張ってきた数値を描画
         document.getElementById("other_wpn_awake_val").innerHTML = `破甲+${totalHakou}<br>守護+${totalShugo}`;
